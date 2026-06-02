@@ -6,7 +6,6 @@ if (!process.env.MONGODB_URI) {
 }
 
 const MONGODB_URI = process.env.MONGODB_URI;
-console.log("Mongo",MONGODB_URI)
 
 // Next.js ke baar-baar reload hone par naya connection na bane isliye global cache use karenge
 let cached = (global as any).mongoose;
@@ -25,7 +24,7 @@ export async function dbConnect() {
     console.log("⏳ Connecting to MongoDB Database...");
     
     cached.promise = mongoose.connect(MONGODB_URI).then((mongooseInstance) => {
-      console.log("✅ MongoDB Connected Successfully to:", mongooseInstance.connection.name);
+      // console.log("✅ MongoDB Connected Successfully to:", mongooseInstance.connection.name);
       return mongooseInstance;
     }).catch((err) => {
       console.error("❌ MongoDB Connection Error:", err);

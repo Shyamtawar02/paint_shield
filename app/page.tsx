@@ -114,7 +114,7 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
 
       {/* WHY CHOOSE — synced with pillar imagery */}
-    <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+  <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
   <div className="text-center max-w-2xl mx-auto mb-14">
     <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Why PAINT SHIELD</p>
     <h2 className="font-display text-4xl md:text-5xl">Engineered to disappear.</h2>
@@ -122,55 +122,77 @@ export default function HomePage() {
   </div>
 
   <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-stretch">
-    <div className="relative aspect-[4/3] lg:aspect-auto rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40 min-h-[320px]">
+    
+    {/* DESKTOP IMAGE VIEW: Only visible on lg (Desktop) screens */}
+    <div className="hidden lg:block relative rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40 min-h-[450px]">
       {benefits.map((b, i) => (
         <Image
           key={b.title}
           src={b.image}
           alt={b.title}
           fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="50vw"
           className={`object-cover transition-opacity duration-700 ease-out ${
             activePillar === i ? "opacity-100" : "opacity-0"
           }`}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent z-10" />
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
+      <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
         <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-2">Pillar 0{activePillar + 1}</p>
-        <h3 className="font-display text-3xl md:text-4xl text-white">{benefits[activePillar].title}</h3>
+        <h3 className="font-display text-4xl text-white">{benefits[activePillar].title}</h3>
         <p className="mt-2 text-white/80 text-sm max-w-md">{benefits[activePillar].text}</p>
       </div>
     </div>
 
-    <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border sm:grid-cols-2">
-      {benefits.map(({ Icon, title, text }, i) => {
+    {/* PILLARS / BUTTONS LIST */}
+    <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border sm:grid-cols-2 lg:grid-cols-1">
+      {benefits.map(({ Icon, title, text, image }, i) => {
         const isActive = activePillar === i;
         return (
-          <button
+          <div
             key={title}
-            type="button"
-            onClick={() => setActivePillar(i)}
-            onMouseEnter={() => setActivePillar(i)}
-            className={`text-left p-6 sm:p-7 flex flex-col items-start gap-3 transition-all ${
-              isActive ? "bg-secondary/60" : "bg-card hover:bg-secondary/40"
+            className={`flex flex-col transition-all ${
+              isActive ? "bg-secondary/60" : "bg-card"
             }`}
           >
-            {/* FIXED: Changed text-background to text-foreground to make the icon dark charcoal/black when active */}
-            <div className={`h-11 w-11 rounded-full grid place-items-center transition-colors ${
-              isActive ? "bg-gold text-foreground shadow-gold" : "border border-gold/40 text-gold"
-            }`}>
-              <Icon className="h-4 w-4" />
-            </div>
-            <h3 className="font-display text-lg">
-              {title}
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
-            <span className={`mt-1 h-px transition-all ${isActive ? "bg-gold w-16" : "bg-border w-10"}`} />
-          </button>
+            {/* Main Accordion/Tab Trigger */}
+            <button
+              type="button"
+              onClick={() => setActivePillar(i)}
+              onMouseEnter={() => setActivePillar(i)}
+              className="text-left p-6 sm:p-7 flex flex-col items-start gap-3 w-full outline-none"
+            >
+              <div className={`h-11 w-11 rounded-full grid place-items-center transition-colors ${
+                isActive ? "bg-gold text-foreground shadow-gold" : "border border-gold/40 text-gold"
+              }`}>
+                <Icon className="h-4 w-4" />
+              </div>
+              <h3 className="font-display text-lg">{title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+              <span className={`mt-1 h-px transition-all ${isActive ? "bg-gold w-16" : "bg-border w-10"}`} />
+            </button>
+
+            {/* MOBILE IMAGE SLOT: Renders right below the text when active on mobile/tablet */}
+            {isActive && (
+              <div className="block lg:hidden px-6 pb-6 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-border/60 shadow-md">
+                  <Image
+                    src={image}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         );
       })}
     </div>
+
   </div>
 </section>
 
