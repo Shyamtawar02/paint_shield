@@ -40,10 +40,10 @@
 }
 
 @theme inline {
-  /* Font Families mapped with Next.js variables */
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
-  --font-mono: var(--font-geist-mono), ui-mono-serif;
+  /* Fixed: Next.js variables correctly mapped with layout.tsx */
+  --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui;
+  --font-mono: ui-mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -90,11 +90,11 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-sans); /* Fixed: Yeh automatic Montserrat load karega body par */
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4, .font-display {
-    font-family: var(--font-display);
+    font-family: var(--font-display); /* Fixed: Yeh headings par Playfair Display load karega */
     letter-spacing: -0.01em;
   }
 }

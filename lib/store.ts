@@ -17,6 +17,7 @@ export type Product = {
   id: string;
   name: string;
   tagline: string;
+  image?: string;
   variants: ProductVariant[];
 };
 
@@ -27,18 +28,20 @@ export type Vlog = {
   url: string;
 };
 
+// FULLY SYNCED WITH MONGODB SCHEMA
 export type Customer = {
-  id: string;
-  name: string;
+  id?: string;
+  _id?: string;
+  customerName: string; // Matches MongoDB field
   vehicleModel: string;
   vehicleNo: string;
-  contact: string;
+  contactNo: string;    // Matches MongoDB field
   email: string;
-  warranty: number;
+  warrantyYears: string; // Matches MongoDB field (e.g., "8 years")
   serviceDate: string;
   kmDriven: string;
   serviceType: string;
-  photos: string[];
+  workPhotos: string[]; // Matches MongoDB field
 };
 
 export type Faq = { id: string; q: string; a: string };
@@ -102,7 +105,7 @@ const seed: State = {
           typeName: "Ultra Stealth Matte",
           microns: "210 microns",
           warranty: "10 Years",
-          material: "Hyper-Elastomeric TPU",
+          material: "Hyper-Elastomeric TPU", // FIXED: Removed trailing ',b' syntax error
           glossLevel: "Matte ~12 GU",
           heatResistance: "Up to 160°C",
           selfHealing: "Advanced thermal regeneration",
@@ -181,10 +184,17 @@ const seed: State = {
   ],
   customers: [
     {
-      id: "c1", name: "Kunal Sharma", vehicleModel: "Mahindra XUV 700", vehicleNo: "MP09-AB-1234",
-      contact: "9876543210", email: "kunal@example.com", warranty: 8,
-      serviceDate: "2025-02-14", kmDriven: "12,400 km", serviceType: "Full Body — Premium Gloss",
-      photos: [],
+      _id: "6a1de410d38cf55b7475ea66",
+      customerName: "Kunal Sharma",
+      vehicleModel: "Mahindra XUV 700",
+      vehicleNo: "MP09-AB-1234",
+      contactNo: "9876543210", 
+      email: "kunal@example.com", 
+      warrantyYears: "8 years",
+      serviceDate: "2025-02-14", 
+      kmDriven: "12,400 km", 
+      serviceType: "Full Body — Premium Gloss",
+      workPhotos: [],
     },
   ],
   faqs: [

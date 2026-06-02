@@ -1,4 +1,4 @@
-// Bhai, top par "use client" zaroor lagana kyunki isme useState aur useEffect use ho rahe hain
+// app/admin/page.tsx
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
@@ -11,10 +11,20 @@ const ADMIN_KEY = "ppf-admin-auth";
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     setAuthed(sessionStorage.getItem(ADMIN_KEY) === "1");
+    setChecking(false);
   }, []);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background grid place-items-center">
+        <p className="text-sm text-muted-foreground animate-pulse">Initializing Studio Console...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -31,10 +41,42 @@ export default function AdminPage() {
   );
 }
 
+/* --------- PRODUCTION ADMIN LOGIN CARD --------- */
 function LoginCard({ onSuccess }: { onSuccess: () => void }) {
   const [u, setU] = useState("");
   const [p, setP] = useState("");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "admin_login",
+          username: u,
+          password: p,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        onSuccess();
+      } else {
+        setErr(data.error || "Invalid username or password");
+      }
+    } catch (error) {
+      setErr("Database server se connect nahi ho paya!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section className="mx-auto max-w-md px-6 py-24">
@@ -42,26 +84,19 @@ function LoginCard({ onSuccess }: { onSuccess: () => void }) {
         <div className="h-12 w-12 rounded-full bg-gradient-gold grid place-items-center mb-6 shadow-gold">
           <Lock className="h-5 w-5 text-ink" />
         </div>
-        <h1 className="font-display text-3xl">Admin Access</h1>
-        <p className="text-sm text-muted-foreground mt-1">Demo credentials: <span className="text-gold">admin / aurum</span></p>
+        <h1 className="font-display text-3xl">PaintShield Admin</h1>
+        <p className="text-sm text-muted-foreground mt-1">Enter database credentials to access console</p>
 
-        <form
-          className="mt-8 space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (u === "admin" && p === "aurum") onSuccess();
-            else setErr("Invalid credentials");
-          }}
-        >
-          <Field label="Username">
-            <input className={inputCls} value={u} onChange={(e) => setU(e.target.value)} required />
+        <form className="mt-8 space-y-4" onSubmit={handleLogin}>
+          <Field label="Username/Email">
+            <input className={inputCls} value={u} onChange={(e) => setU(e.target.value)} disabled={loading} required />
           </Field>
           <Field label="Password">
-            <input type="password" className={inputCls} value={p} onChange={(e) => setP(e.target.value)} required />
+            <input type="password" className={inputCls} value={p} onChange={(e) => setP(e.target.value)} disabled={loading} required />
           </Field>
           {err && <p className="text-sm text-destructive">{err}</p>}
-          <button className="w-full rounded-full bg-foreground text-background py-3 text-sm font-medium hover:bg-gold hover:text-ink transition-colors">
-            Sign In
+          <button type="submit" disabled={loading} className="w-full rounded-full bg-foreground text-background py-3 text-sm font-medium hover:bg-gold hover:text-ink transition-colors disabled:opacity-50">
+            {loading ? "Verifying..." : "Sign In"}
           </button>
         </form>
       </div>
@@ -108,7 +143,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 }
 
 /* --------- CUSTOMERS PANEL --------- */
-
 const emptyCustomer: Omit<Customer, "id"> = {
   name: "", vehicleModel: "", vehicleNo: "", contact: "", email: "",
   warranty: 5, serviceDate: new Date().toISOString().slice(0, 10),
@@ -120,8 +154,74 @@ function CustomersPanel() {
   const [editing, setEditing] = useState<Customer | null>(null);
   const [adding, setAdding] = useState(false);
   const [q, setQ] = useState("");
+  const [fetchingData, setFetchingData] = useState(false);
 
-  const filtered = state.customers.filter((c) =>
+  // 1. Fetch Customers from Database on Load
+ // 🔥 FIXED: Dependency array ko khali [] kiya taaki loop ruk jaye
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setFetchingData(true);
+      try {
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_customers" }),
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.success) {
+          update((s) => {
+            s.customers = data.data;
+            return s;
+          });
+        } else {
+          console.error("Failed to load customers:", data.error);
+        }
+      } catch (err) {
+        console.error("Database connection error:", err);
+      } finally {
+        setFetchingData(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []); 
+
+  // 2. Delete Customer from Database
+  const handleDeleteCustomer = async (customer: Customer) => {
+    const targetId = customer.id || (customer as any)._id;
+    if (!targetId) return;
+
+    if (confirm(`Are you sure you want to permanently delete ${customer.name}?`)) {
+      try {
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "delete_customer",
+            customerId: targetId,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          update((s) => {
+            s.customers = s.customers.filter((x) => x.id !== targetId && (x as any)._id !== targetId);
+            return s;
+          });
+          alert("Customer record deleted successfully.");
+        } else {
+          alert("Delete failed: " + (data.error || "Unknown server error"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to sync delete with Database.");
+      }
+    }
+  };
+
+  const filtered = (state.customers || []).filter((c) =>
     [c.name, c.vehicleNo, c.vehicleModel, c.contact].join(" ").toLowerCase().includes(q.toLowerCase()),
   );
 
@@ -154,60 +254,62 @@ function CustomersPanel() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
+            {fetchingData ? (
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">⏳ Loading dynamic records from Database...</td></tr>
+            ) : filtered.length === 0 ? (
               <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No customers found.</td></tr>
+            ) : (
+              filtered.map((c) => (
+                <tr key={c.id || (c as any)._id} className="border-t border-border">
+                  <td className="p-4">
+                    <p className="font-medium">{c.name}</p>
+                    <p className="text-xs text-muted-foreground">{c.email || "—"}</p>
+                  </td>
+                  <td className="p-4">
+                    <p>{c.vehicleModel}</p>
+                    <p className="text-xs text-muted-foreground">{c.vehicleNo}</p>
+                  </td>
+                  <td className="p-4">{c.contact}</td>
+                  <td className="p-4">
+                    <span className="text-gold font-medium">
+                      {typeof c.warranty === "number" ? `${c.warranty} yrs` : c.warranty}
+                    </span>
+                  </td>
+                  <td className="p-4 text-right">
+                    <div className="inline-flex gap-1">
+                      <button onClick={() => setEditing(c)} className="h-9 w-9 grid place-items-center rounded-md hover:bg-secondary"><Pencil className="h-4 w-4" /></button>
+                      <button
+                        onClick={() => handleDeleteCustomer(c)}
+                        className="h-9 w-9 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
-            {filtered.map((c) => (
-              <tr key={c.id} className="border-t border-border">
-                <td className="p-4">
-                  <p className="font-medium">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.email}</p>
-                </td>
-                <td className="p-4">
-                  <p>{c.vehicleModel}</p>
-                  <p className="text-xs text-muted-foreground">{c.vehicleNo}</p>
-                </td>
-                <td className="p-4">{c.contact}</td>
-                <td className="p-4"><span className="text-gold font-medium">{c.warranty} yrs</span></td>
-                <td className="p-4 text-right">
-                  <div className="inline-flex gap-1">
-                    <button onClick={() => setEditing(c)} className="h-9 w-9 grid place-items-center rounded-md hover:bg-secondary"><Pencil className="h-4 w-4" /></button>
-                    <button
-                      onClick={() => { 
-                        if (confirm(`Delete ${c.name}?`)) {
-                          update((s) => {
-                            s.customers = s.customers.filter((x) => x.id !== c.id);
-                            return s;
-                          });
-                        } 
-                      }}
-                      className="h-9 w-9 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
 
       {(adding || editing) && (
         <CustomerModal
-          initial={editing ?? { id: "", ...emptyCustomer }}
+          initial={editing ?? { id: "", name: "", email: "", vehicleModel: "", vehicleNo: "", contact: "", warranty: 5, serviceDate: new Date().toISOString().slice(0, 10), kmDriven: "", serviceType: "", photos: [] }}
           isNew={!editing}
           onClose={() => { setAdding(false); setEditing(null); }}
-          onSave={(c) => {
+          onSave={(savedCustomer) => {
             update((s) => {
               if (editing) {
-                s.customers = s.customers.map((x) => (x.id === editing.id ? c : x));
+                const targetId = editing.id || (editing as any)._id;
+                s.customers = s.customers.map((x) => (x.id === targetId || (x as any)._id === targetId ? savedCustomer : x));
               } else {
-                s.customers.push({ ...c, id: id() });
+                s.customers.unshift(savedCustomer);
               }
               return s;
             });
-            setAdding(false); setEditing(null);
+            setAdding(false); 
+            setEditing(null);
           }}
         />
       )}
@@ -219,6 +321,7 @@ function CustomerModal({
   initial, isNew, onClose, onSave,
 }: { initial: Customer; isNew: boolean; onClose: () => void; onSave: (c: Customer) => void }) {
   const [c, setC] = useState<Customer>(initial);
+  const [loading, setLoading] = useState(false);
 
   const set = <K extends keyof Customer>(k: K, v: Customer[K]) => setC((p) => ({ ...p, [k]: v }));
 
@@ -236,37 +339,102 @@ function CustomerModal({
     ).then((urls) => set("photos", urls));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const formattedData = {
+        customerName: c.name,
+        email: c.email || "",
+        vehicleModel: c.vehicleModel,
+        vehicleNo: c.vehicleNo,
+        contactNo: c.contact,
+        warrantyYears: typeof c.warranty === "number" ? `${c.warranty} years` : c.warranty,
+        serviceDate: c.serviceDate || "",
+        kmDriven: c.kmDriven || "",
+        serviceType: c.serviceType || "",
+        workPhotos: c.photos || []
+      };
+
+      if (isNew) {
+        // Create Flow
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create_customer",
+            customerData: formattedData,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          onSave({ ...c, id: data.id });
+          alert("Customer record created successfully!");
+        } else {
+          alert("Error: " + (data.error || "Failed to create customer"));
+        }
+      } else {
+        // Update Flow
+        const targetId = c.id || (c as any)._id;
+        
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update_customer",
+            customerId: targetId,
+            customerData: formattedData,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          onSave(c);
+          alert("Customer record updated successfully!");
+        } else {
+          alert("Update failed: " + (data.error || "Unknown error"));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Database link failure! Sync nahi ho paya.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4 overflow-y-auto">
       <div className="bg-card rounded-2xl border border-border shadow-luxe w-full max-w-2xl my-8">
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h3 className="font-display text-2xl">{isNew ? "Add" : "Edit"} Customer</h3>
-          <button onClick={onClose} className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} disabled={loading} className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary"><X className="h-4 w-4" /></button>
         </div>
-        <form
-          onSubmit={(e) => { e.preventDefault(); onSave(c); }}
-          className="p-6 grid gap-4 sm:grid-cols-2"
-        >
-          <Field label="Customer Name"><input className={inputCls} value={c.name} required onChange={(e) => set("name", e.target.value)} /></Field>
-          <Field label="Email"><input type="email" className={inputCls} value={c.email} onChange={(e) => set("email", e.target.value)} /></Field>
-          <Field label="Vehicle Model"><input className={inputCls} placeholder="e.g. XUV 700" value={c.vehicleModel} required onChange={(e) => set("vehicleModel", e.target.value)} /></Field>
-          <Field label="Vehicle No."><input className={inputCls} placeholder="MP09-AB-1234" value={c.vehicleNo} required onChange={(e) => set("vehicleNo", e.target.value)} /></Field>
-          <Field label="Contact No."><input className={inputCls} value={c.contact} required onChange={(e) => set("contact", e.target.value)} /></Field>
+        <form onSubmit={handleSubmit} className="p-6 grid gap-4 sm:grid-cols-2">
+          <Field label="Customer Name"><input className={inputCls} value={c.name} required disabled={loading} onChange={(e) => set("name", e.target.value)} /></Field>
+          <Field label="Email"><input type="email" className={inputCls} value={c.email} disabled={loading} onChange={(e) => set("email", e.target.value)} /></Field>
+          <Field label="Vehicle Model"><input className={inputCls} placeholder="e.g. Fortuner" value={c.vehicleModel} required disabled={loading} onChange={(e) => set("vehicleModel", e.target.value)} /></Field>
+          <Field label="Vehicle No."><input className={inputCls} placeholder="DL-3C-AA-1111" value={c.vehicleNo} required disabled={loading} onChange={(e) => set("vehicleNo", e.target.value)} /></Field>
+          <Field label="Contact No."><input className={inputCls} value={c.contact} required disabled={loading} onChange={(e) => set("contact", e.target.value)} /></Field>
           <Field label="Warranty (years)">
-            <select className={inputCls} value={c.warranty} onChange={(e) => set("warranty", Number(e.target.value))}>
+            <select className={inputCls} value={c.warranty} disabled={loading} onChange={(e) => set("warranty", Number(e.target.value))}>
               {[5, 8, 10].map((y) => <option key={y} value={y}>{y} years</option>)}
             </select>
           </Field>
-          <Field label="Service Date"><input type="date" className={inputCls} value={c.serviceDate} onChange={(e) => set("serviceDate", e.target.value)} /></Field>
-          <Field label="KM Driven"><input className={inputCls} value={c.kmDriven} onChange={(e) => set("kmDriven", e.target.value)} /></Field>
-          <Field label="Service Type" full><input className={inputCls} placeholder="Full Body — Premium Gloss" value={c.serviceType} onChange={(e) => set("serviceType", e.target.value)} /></Field>
+          <Field label="Service Date"><input type="date" className={inputCls} value={c.serviceDate} disabled={loading} onChange={(e) => set("serviceDate", e.target.value)} /></Field>
+          <Field label="KM Driven"><input className={inputCls} value={c.kmDriven} disabled={loading} onChange={(e) => set("kmDriven", e.target.value)} /></Field>
+          <Field label="Service Type" full><input className={inputCls} placeholder="PaintShield Premium Gloss PPF" value={c.serviceType} disabled={loading} onChange={(e) => set("serviceType", e.target.value)} /></Field>
 
           <div className="sm:col-span-2">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Work Photos (up to 4)</p>
-            <label className="flex items-center gap-2 px-4 py-3 border border-dashed border-border rounded-md cursor-pointer hover:border-gold transition-colors text-sm">
+            <label className={`flex items-center gap-2 px-4 py-3 border border-dashed border-border rounded-md cursor-pointer hover:border-gold transition-colors text-sm ${loading ? "opacity-50 pointer-events-none" : ""}`}>
               <Upload className="h-4 w-4" />
               <span>{c.photos.length ? `${c.photos.length} photo(s) selected` : "Upload images"}</span>
-              <input type="file" accept="image/*" multiple className="hidden" onChange={onPhotos} />
+              <input type="file" accept="image/*" multiple className="hidden" disabled={loading} onChange={onPhotos} />
             </label>
             {c.photos.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-3">
@@ -276,8 +444,10 @@ function CustomerModal({
           </div>
 
           <div className="sm:col-span-2 flex justify-end gap-3 pt-4 border-t border-border">
-            <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-full border border-border text-sm hover:bg-secondary">Cancel</button>
-            <button className={btnGold}>{isNew ? "Create" : "Save"}</button>
+            <button type="button" onClick={onClose} disabled={loading} className="px-5 py-2.5 rounded-full border border-border text-sm hover:bg-secondary">Cancel</button>
+            <button type="submit" disabled={loading} className={btnGold}>
+              {loading ? "Saving to Cloud..." : isNew ? "Create" : "Save"}
+            </button>
           </div>
         </form>
       </div>
@@ -286,15 +456,9 @@ function CustomerModal({
 }
 
 /* --------- PRODUCTS PANEL --------- */
-
-const emptyProduct: Omit<Product, "id"> = {
-  name: "", tagline: "", variants: [],
-};
-
+const emptyProduct: Omit<Product, "id"> = { name: "", tagline: "", variants: [] };
 const emptyVariant: Omit<ProductVariant, "id"> = {
-  typeName: "", microns: "", warranty: "",
-  material: "Aliphatic TPU", glossLevel: "", heatResistance: "",
-  selfHealing: "", details: "",
+  typeName: "", microns: "", warranty: "", material: "Aliphatic TPU", glossLevel: "", heatResistance: "", selfHealing: "", details: ""
 };
 
 function ProductsPanel() {
@@ -302,6 +466,45 @@ function ProductsPanel() {
   const [editingCat, setEditingCat] = useState<Product | null>(null);
   const [addingCat, setAddingCat] = useState(false);
   const [variantCtx, setVariantCtx] = useState<{ product: Product; variant: ProductVariant | null } | null>(null);
+
+  // 1. Database se products data fetch karne ke liye (No loop)
+  useEffect(() => {
+    const fetchProductsData = async () => {
+      try {
+        const res = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_products_data" }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          update((s) => {
+            s.products = data.data.map((cat: any) => ({
+              id: cat.id,
+              name: cat.name,
+              tagline: cat.tagline,
+              variants: cat.variants.map((v: any) => ({
+                id: v.id,
+                typeName: v.name,
+                microns: v.microns,
+                warranty: v.warranty,
+                material: v.material,
+                glossLevel: v.glossLevel,
+                heatResistance: v.heatResistance,
+                selfHealing: v.selfHealing,
+                details: v.detailedInfo || ""
+              }))
+            }));
+            return s;
+          });
+        }
+      } catch (err) {
+        console.error("Error loading products:", err);
+      }
+    };
+
+    fetchProductsData();
+  }, []); // Empty array loop rokne ke liye
 
   return (
     <div>
@@ -330,12 +533,21 @@ function ProductsPanel() {
                 </button>
                 <button onClick={() => setEditingCat(p)} className="h-9 w-9 grid place-items-center rounded-md hover:bg-secondary"><Pencil className="h-4 w-4" /></button>
                 <button
-                  onClick={() => { 
+                  onClick={async () => { 
                     if (confirm(`Delete category "${p.name}"?`)) {
-                      update((s) => {
-                        s.products = s.products.filter((x) => x.id !== p.id);
-                        return s;
-                      });
+                      try {
+                        const res = await fetch("/api/admin", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "delete_category", categoryId: p.id }),
+                        });
+                        if (res.ok) {
+                          update((s) => {
+                            s.products = s.products.filter((x) => x.id !== p.id);
+                            return s;
+                          });
+                        }
+                      } catch (err) { console.error(err); }
                     }
                   }}
                   className="h-9 w-9 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive"
@@ -357,12 +569,21 @@ function ProductsPanel() {
                     <div className="flex gap-1 shrink-0">
                       <button onClick={() => setVariantCtx({ product: p, variant: v })} className="h-8 w-8 grid place-items-center rounded-md hover:bg-secondary"><Pencil className="h-3.5 w-3.5" /></button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (!confirm(`Delete variant "${v.typeName}"?`)) return;
-                          update((s) => {
-                            s.products = s.products.map((x) => x.id === p.id ? { ...x, variants: x.variants.filter((y) => y.id !== v.id) } : x);
-                            return s;
-                          });
+                          try {
+                            const res = await fetch("/api/admin", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ action: "delete_variant", variantId: v.id }),
+                            });
+                            if (res.ok) {
+                              update((s) => {
+                                s.products = s.products.map((x) => x.id === p.id ? { ...x, variants: x.variants.filter((y) => y.id !== v.id) } : x);
+                                return s;
+                              });
+                            }
+                          } catch (err) { console.error(err); }
                         }}
                         className="h-8 w-8 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive"
                       >
@@ -382,15 +603,30 @@ function ProductsPanel() {
           initial={editingCat ?? { id: "", ...emptyProduct }}
           isNew={!editingCat}
           onClose={() => { setAddingCat(false); setEditingCat(null); }}
-          onSave={(pData) => {
-            update((s) => {
-              if (editingCat) {
-                s.products = s.products.map((x) => (x.id === editingCat.id ? pData : x));
-              } else {
-                s.products.push({ ...pData, id: id(), variants: [] });
+          onSave={async (pData) => {
+            try {
+              const isNew = !editingCat;
+              const res = await fetch("/api/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  action: isNew ? "create_category" : "update_category",
+                  categoryId: editingCat?.id,
+                  categoryData: { name: pData.name, tagline: pData.tagline }
+                })
+              });
+              const data = await res.json();
+              if (res.ok) {
+                update((s) => {
+                  if (editingCat) {
+                    s.products = s.products.map((x) => (x.id === editingCat.id ? pData : x));
+                  } else {
+                    s.products.push({ ...pData, id: data.id || Date.now().toString(), variants: [] });
+                  }
+                  return s;
+                });
               }
-              return s;
-            });
+            } catch (err) { console.error(err); }
             setAddingCat(false); setEditingCat(null);
           }}
         />
@@ -402,19 +638,44 @@ function ProductsPanel() {
           initial={variantCtx.variant ?? { id: "", ...emptyVariant }}
           isNew={!variantCtx.variant}
           onClose={() => setVariantCtx(null)}
-          onSave={(vData) => {
+          onSave={async (vData) => {
             const editing = variantCtx.variant;
-            update((s) => {
-              s.products = s.products.map((x) => x.id === variantCtx.product.id
-                ? {
-                    ...x,
-                    variants: editing
-                      ? x.variants.map((y) => y.id === editing.id ? vData : y)
-                      : [...x.variants, { ...vData, id: id() }],
+            try {
+              const isNew = !editing;
+              const res = await fetch("/api/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  action: isNew ? "create_variant" : "update_variant",
+                  categoryId: variantCtx.product.id,
+                  variantId: editing?.id,
+                  variantData: {
+                    name: vData.typeName,
+                    microns: vData.microns,
+                    warranty: vData.warranty,
+                    material: vData.material,
+                    glossLevel: vData.glossLevel,
+                    heatResistance: vData.heatResistance,
+                    selfHealing: vData.selfHealing,
+                    detailedInfo: vData.details
                   }
-                : x);
-              return s;
-            });
+                })
+              });
+              const data = await res.json();
+              if (res.ok) {
+                update((s) => {
+                  s.products = s.products.map((x) => x.id === variantCtx.product.id
+                    ? {
+                        ...x,
+                        variants: editing
+                          ? x.variants.map((y) => y.id === editing.id ? vData : y)
+                          : [...x.variants, { ...vData, id: data.id || Date.now().toString() }],
+                      }
+                    : x);
+                  return s;
+                });
+              }
+            } catch (err) { console.error(err); }
             setVariantCtx(null);
           }}
         />
@@ -425,23 +686,77 @@ function ProductsPanel() {
 
 function CategoryModal({ initial, isNew, onClose, onSave }: { initial: Product; isNew?: boolean; onClose: () => void; onSave: (p: Product) => void }) {
   const [p, setP] = useState(initial);
+  const [loading, setLoading] = useState(false); // Action feedback ke liye
+
+  // 🔥 Image ko base64 string mein convert karke state mein save karne ke liye helper
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setP((prev) => ({ ...prev, image: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4 overflow-y-auto">
-      <form
-        onSubmit={(e) => { e.preventDefault(); onSave(p); }}
+      <form 
+        onSubmit={(e) => { 
+          e.preventDefault(); 
+          onSave(p); 
+        }} 
         className="bg-card rounded-2xl border border-border shadow-luxe w-full max-w-lg my-8 p-6"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-display text-2xl">{isNew ? "Add" : "Edit"} Category</h3>
-          <button type="button" onClick={onClose} className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary"><X className="h-4 w-4" /></button>
+          <button type="button" onClick={onClose} className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary">
+            <X className="h-4 w-4" />
+          </button>
         </div>
+        
         <div className="grid gap-4">
-          <Field label="Category Name" full><input className={inputCls} required placeholder="e.g. Paint Protection Film" value={p.name} onChange={(e) => setP(prev => ({ ...prev, name: e.target.value }))} /></Field>
-          <Field label="Tagline" full><input className={inputCls} required placeholder="e.g. Ultimate Paint Defense" value={p.tagline} onChange={(e) => setP(prev => ({ ...prev, tagline: e.target.value }))} /></Field>
+          <Field label="Category Name" full>
+            <input className={inputCls} required placeholder="e.g. Paint Protection Film" value={p.name} onChange={(e) => setP(prev => ({ ...prev, name: e.target.value }))} />
+          </Field>
+          
+          <Field label="Tagline" full>
+            <input className={inputCls} required placeholder="e.g. Ultimate Paint Defense" value={p.tagline} onChange={(e) => setP(prev => ({ ...prev, tagline: e.target.value }))} />
+          </Field>
+
+          {/* 🔥 NEW: Dynamic Image Upload Section */}
+          <div className="space-y-1.5">
+            <label className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Category Showcase Image</label>
+            <label className="flex items-center gap-2 px-4 py-3 border border-dashed border-border rounded-md cursor-pointer hover:border-gold transition-colors text-sm bg-background/50">
+              <Upload className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">{p.image ? "Change Product Image" : "Choose Dynamic Banner"}</span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            </label>
+            
+            {/* Live Preview Block */}
+            {p.image && (
+              <div className="relative mt-2 border border-border rounded-lg overflow-hidden bg-secondary/20">
+                <img src={p.image} alt="Preview" className="h-28 w-full object-cover" />
+                <button 
+                  type="button" 
+                  onClick={() => setP(prev => ({ ...prev, image: "" }))} 
+                  className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
         <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-border">
-          <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-full border border-border text-sm hover:bg-secondary">Cancel</button>
-          <button className={btnGold}>{isNew ? "Create" : "Save"}</button>
+          <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-full border border-border text-sm hover:bg-secondary">
+            Cancel
+          </button>
+          <button type="submit" className={btnGold}>
+            {isNew ? "Create" : "Save"}
+          </button>
         </div>
       </form>
     </div>
@@ -454,10 +769,7 @@ function VariantModal({ product, initial, isNew, onClose, onSave }: { product: P
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4 overflow-y-auto">
-      <form
-        onSubmit={(e) => { e.preventDefault(); onSave(v); }}
-        className="bg-card rounded-2xl border border-border shadow-luxe w-full max-w-2xl my-8 p-6"
-      >
+      <form onSubmit={(e) => { e.preventDefault(); onSave(v); }} className="bg-card rounded-2xl border border-border shadow-luxe w-full max-w-2xl my-8 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-gold">{product.name}</p>
@@ -487,7 +799,6 @@ function VariantModal({ product, initial, isNew, onClose, onSave }: { product: P
 }
 
 /* --------- VLOGS PANEL --------- */
-
 function VlogsPanel() {
   const { state, update } = useStore();
   const [v, setV] = useState<Omit<Vlog, "id">>({ title: "", description: "", url: "" });
@@ -540,7 +851,6 @@ function VlogsPanel() {
 }
 
 /* --------- FAQ PANEL --------- */
-
 function FaqPanel() {
   const { state, update } = useStore();
   const [draft, setDraft] = useState<Omit<Faq, "id">>({ q: "", a: "" });
@@ -632,7 +942,6 @@ function FaqRow({ faq }: { faq: Faq }) {
 }
 
 /* --------- STUDIO PANEL --------- */
-
 function StudioPanel() {
   const { state, update } = useStore();
   const [s, setS] = useState<Studio>(state.studio);
@@ -679,17 +988,16 @@ function StudioPanel() {
 }
 
 /* --------- SHARED STYLES & COMPONENTS --------- */
-
 const inputCls =
-  "w-full rounded-md border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold transition";
+  "w-full rounded-md border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold transition disabled:opacity-60 disabled:cursor-not-allowed";
 
 const btnGold =
-  "inline-flex items-center gap-2 rounded-full bg-gradient-gold text-ink px-5 py-2.5 text-sm font-medium hover:shadow-gold transition-all";
+  "inline-flex items-center gap-2 rounded-full bg-gradient-gold text-ink px-5 py-2.5 text-sm font-medium hover:shadow-gold transition-all disabled:opacity-50";
 
 function Field({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
-    <label className={`block ${full ? "sm:col-span-2" : ""}`}>
-      <span className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1.5">{label}</span>
+    <label className={`block ${full ? "sm:col-span-2" : ""} space-y-2`}>
+      <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
       {children}
     </label>
   );
