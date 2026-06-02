@@ -143,10 +143,19 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 }
 
 /* --------- CUSTOMERS PANEL --------- */
-const emptyCustomer: Omit<Customer, "id"> = {
-  name: "", vehicleModel: "", vehicleNo: "", contact: "", email: "",
-  warranty: 5, serviceDate: new Date().toISOString().slice(0, 10),
-  kmDriven: "", serviceType: "", photos: [],
+/* --------- CUSTOMERS PANEL --------- */
+const emptyCustomer: Customer = {
+  id: "",
+  customerName: "", 
+  vehicleModel: "", 
+  vehicleNo: "", 
+  contactNo: "", 
+  email: "",
+  warrantyYears: "5 years", 
+  serviceDate: new Date().toISOString().slice(0, 10),
+  kmDriven: "", 
+  serviceType: "", 
+  workPhotos: [],
 };
 
 function CustomersPanel() {
@@ -157,7 +166,6 @@ function CustomersPanel() {
   const [fetchingData, setFetchingData] = useState(false);
 
   // 1. Fetch Customers from Database on Load
- // 🔥 FIXED: Dependency array ko khali [] kiya taaki loop ruk jaye
   useEffect(() => {
     const fetchCustomers = async () => {
       setFetchingData(true);
@@ -171,7 +179,20 @@ function CustomersPanel() {
         const data = await response.json();
         if (response.ok && data.success) {
           update((s) => {
-            s.customers = data.data;
+            // Backend se jo dynamic formatted data aa raha hai use handle karne ke liye
+            s.customers = data.data.map((item: any) => ({
+              id: item.id,
+              customerName: item.name || item.customerName || "",
+              email: item.email || "",
+              vehicleModel: item.vehicleModel || "",
+              vehicleNo: item.vehicleNo || "",
+              contactNo: item.contact || item.contactNo || "",
+              warrantyYears: item.warranty ? `${item.warranty} years` : (item.warrantyYears || "5 years"),
+              serviceDate: item.serviceDate || "",
+              kmDriven: item.kmDriven || "",
+              serviceType: item.serviceType || "",
+              workPhotos: item.photos || item.workPhotos || []
+            }));
             return s;
           });
         } else {
@@ -189,10 +210,10 @@ function CustomersPanel() {
 
   // 2. Delete Customer from Database
   const handleDeleteCustomer = async (customer: Customer) => {
-    const targetId = customer.id || (customer as any)._id;
+    const targetId = customer.id || customer._id;
     if (!targetId) return;
 
-    if (confirm(`Are you sure you want to permanently delete ${customer.name}?`)) {
+    if (confirm(`Are you sure you want to permanently delete ${customer.customerName}?`)) {
       try {
         const response = await fetch("/api/admin", {
           method: "POST",
@@ -207,7 +228,7 @@ function CustomersPanel() {
 
         if (response.ok && data.success) {
           update((s) => {
-            s.customers = s.customers.filter((x) => x.id !== targetId && (x as any)._id !== targetId);
+            s.customers = s.customers.filter((x) => x.id !== targetId && x._id !== targetId);
             return s;
           });
           alert("Customer record deleted successfully.");
@@ -222,7 +243,7 @@ function CustomersPanel() {
   };
 
   const filtered = (state.customers || []).filter((c) =>
-    [c.name, c.vehicleNo, c.vehicleModel, c.contact].join(" ").toLowerCase().includes(q.toLowerCase()),
+    [c.customerName, c.vehicleNo, c.vehicleModel, c.contactNo].join(" ").toLowerCase().includes(q.toLowerCase()),
   );
 
   return (
@@ -260,19 +281,19 @@ function CustomersPanel() {
               <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No customers found.</td></tr>
             ) : (
               filtered.map((c) => (
-                <tr key={c.id || (c as any)._id} className="border-t border-border">
+                <tr key={c.id || c._id} className="border-t border-border">
                   <td className="p-4">
-                    <p className="font-medium">{c.name}</p>
+                    <p className="font-medium">{c.customerName}</p>
                     <p className="text-xs text-muted-foreground">{c.email || "—"}</p>
                   </td>
                   <td className="p-4">
                     <p>{c.vehicleModel}</p>
                     <p className="text-xs text-muted-foreground">{c.vehicleNo}</p>
                   </td>
-                  <td className="p-4">{c.contact}</td>
+                  <td className="p-4">{c.contactNo}</td>
                   <td className="p-4">
                     <span className="text-gold font-medium">
-                      {typeof c.warranty === "number" ? `${c.warranty} yrs` : c.warranty}
+                      {c.warrantyYears}
                     </span>
                   </td>
                   <td className="p-4 text-right">
@@ -295,14 +316,14 @@ function CustomersPanel() {
 
       {(adding || editing) && (
         <CustomerModal
-          initial={editing ?? { id: "", name: "", email: "", vehicleModel: "", vehicleNo: "", contact: "", warranty: 5, serviceDate: new Date().toISOString().slice(0, 10), kmDriven: "", serviceType: "", photos: [] }}
+          initial={editing ?? emptyCustomer}
           isNew={!editing}
           onClose={() => { setAdding(false); setEditing(null); }}
           onSave={(savedCustomer) => {
             update((s) => {
               if (editing) {
-                const targetId = editing.id || (editing as any)._id;
-                s.customers = s.customers.map((x) => (x.id === targetId || (x as any)._id === targetId ? savedCustomer : x));
+                const targetId = editing.id || editing._id;
+                s.customers = s.customers.map((x) => (x.id === targetId || x._id === targetId ? savedCustomer : x));
               } else {
                 s.customers.unshift(savedCustomer);
               }
@@ -336,7 +357,7 @@ function CustomerModal({
             r.readAsDataURL(f);
           }),
       ),
-    ).then((urls) => set("photos", urls));
+    ).then((urls) => set("workPhotos", urls));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -344,27 +365,13 @@ function CustomerModal({
     setLoading(true);
 
     try {
-      const formattedData = {
-        customerName: c.name,
-        email: c.email || "",
-        vehicleModel: c.vehicleModel,
-        vehicleNo: c.vehicleNo,
-        contactNo: c.contact,
-        warrantyYears: typeof c.warranty === "number" ? `${c.warranty} years` : c.warranty,
-        serviceDate: c.serviceDate || "",
-        kmDriven: c.kmDriven || "",
-        serviceType: c.serviceType || "",
-        workPhotos: c.photos || []
-      };
-
       if (isNew) {
-        // Create Flow
         const response = await fetch("/api/admin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "create_customer",
-            customerData: formattedData,
+            customerData: c,
           }),
         });
 
@@ -377,8 +384,7 @@ function CustomerModal({
           alert("Error: " + (data.error || "Failed to create customer"));
         }
       } else {
-        // Update Flow
-        const targetId = c.id || (c as any)._id;
+        const targetId = c.id || c._id;
         
         const response = await fetch("/api/admin", {
           method: "POST",
@@ -386,7 +392,7 @@ function CustomerModal({
           body: JSON.stringify({
             action: "update_customer",
             customerId: targetId,
-            customerData: formattedData,
+            customerData: c,
           }),
         });
 
@@ -415,14 +421,14 @@ function CustomerModal({
           <button onClick={onClose} disabled={loading} className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary"><X className="h-4 w-4" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Customer Name"><input className={inputCls} value={c.name} required disabled={loading} onChange={(e) => set("name", e.target.value)} /></Field>
+          <Field label="Customer Name"><input className={inputCls} value={c.customerName} required disabled={loading} onChange={(e) => set("customerName", e.target.value)} /></Field>
           <Field label="Email"><input type="email" className={inputCls} value={c.email} disabled={loading} onChange={(e) => set("email", e.target.value)} /></Field>
           <Field label="Vehicle Model"><input className={inputCls} placeholder="e.g. Fortuner" value={c.vehicleModel} required disabled={loading} onChange={(e) => set("vehicleModel", e.target.value)} /></Field>
           <Field label="Vehicle No."><input className={inputCls} placeholder="DL-3C-AA-1111" value={c.vehicleNo} required disabled={loading} onChange={(e) => set("vehicleNo", e.target.value)} /></Field>
-          <Field label="Contact No."><input className={inputCls} value={c.contact} required disabled={loading} onChange={(e) => set("contact", e.target.value)} /></Field>
+          <Field label="Contact No."><input className={inputCls} value={c.contactNo} required disabled={loading} onChange={(e) => set("contactNo", e.target.value)} /></Field>
           <Field label="Warranty (years)">
-            <select className={inputCls} value={c.warranty} disabled={loading} onChange={(e) => set("warranty", Number(e.target.value))}>
-              {[5, 8, 10].map((y) => <option key={y} value={y}>{y} years</option>)}
+            <select className={inputCls} value={c.warrantyYears} disabled={loading} onChange={(e) => set("warrantyYears", e.target.value)}>
+              {["5 years", "8 years", "10 years"].map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
           </Field>
           <Field label="Service Date"><input type="date" className={inputCls} value={c.serviceDate} disabled={loading} onChange={(e) => set("serviceDate", e.target.value)} /></Field>
@@ -433,12 +439,12 @@ function CustomerModal({
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Work Photos (up to 4)</p>
             <label className={`flex items-center gap-2 px-4 py-3 border border-dashed border-border rounded-md cursor-pointer hover:border-gold transition-colors text-sm ${loading ? "opacity-50 pointer-events-none" : ""}`}>
               <Upload className="h-4 w-4" />
-              <span>{c.photos.length ? `${c.photos.length} photo(s) selected` : "Upload images"}</span>
+              <span>{c.workPhotos?.length ? `${c.workPhotos.length} photo(s) selected` : "Upload images"}</span>
               <input type="file" accept="image/*" multiple className="hidden" disabled={loading} onChange={onPhotos} />
             </label>
-            {c.photos.length > 0 && (
+            {c.workPhotos && c.workPhotos.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-3">
-                {c.photos.map((p, i) => <img key={i} src={p} alt="" className="aspect-square object-cover rounded-md" />)}
+                {c.workPhotos.map((p, i) => <img key={i} src={p} alt="" className="aspect-square object-cover rounded-md" />)}
               </div>
             )}
           </div>
