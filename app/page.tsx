@@ -64,7 +64,7 @@ export default function HomePage() {
     const loadFreshDatabaseData = async () => {
       try {
         // page.tsx ki line 66 ko aise badal kar test karo:
-const response = await fetch("http://localhost:3000/api/admin", { 
+          const response = await fetch("/api/admin", { 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "get_public_init_data" }),
