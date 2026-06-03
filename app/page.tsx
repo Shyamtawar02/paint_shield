@@ -318,7 +318,7 @@ const response = await fetch("http://localhost:3000/api/admin", {
                   <VariantCard
                     key={v.id}
                     variant={v}
-                    featured={i === 1 && currentCategory.variants.length > 2}
+                    featured={i === 1}
                     onOpen={() => setActive({ product: currentCategory, variant: v })}
                   />
                 ))}
@@ -472,29 +472,46 @@ const VariantCard = memo(function VariantCard({
   return (
     <article
       className={`relative flex flex-col rounded-2xl border bg-card p-8 transition-all hover:shadow-luxe hover:-translate-y-1 ${
-        featured ? "border-gold shadow-gold" : "border-border shadow-soft"
+        featured 
+          ? "border-gold shadow-[0_0_20px_rgba(218,165,32,0.15)] ring-1 ring-gold/20" 
+          : "border-border shadow-soft"
       }`}
     >
+      {/* MOST POPULAR BADGE */}
       {featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-background text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full font-semibold">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-black text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-1 rounded-full shadow-lg z-10">
           Most Popular
-        </span>
+        </div>
       )}
+
+      {/* HEADER: Warranty/Time */}
       <div className="flex items-center gap-2 text-gold">
         <Sparkles className="h-4 w-4" />
-        <p className="text-xs uppercase tracking-[0.25em]">{variant.warranty}</p>
+        <p className="text-xs uppercase tracking-[0.25em] font-semibold">{variant.warranty} Coverage</p>
       </div>
+
+      {/* TITLE */}
       <h3 className="font-display text-3xl mt-3">{variant.name}</h3>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-        <Spec label="Thickness" value={variant.microns} />
-        <Spec label="Warranty" value={variant.warranty} />
+      {/* THICKNESS & WARRANTY */}
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        <div>
+           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Thickness</p>
+           <p className="font-display text-2xl mt-1">{variant.microns}</p>
+        </div>
+        <div>
+           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Warranty</p>
+           <p className="font-display text-2xl mt-1">{variant.warranty}</p>
+        </div>
       </div>
-      <div className="mt-4 flex items-start gap-2 text-sm text-muted-foreground">
+
+      {/* FEATURE TEXT */}
+      <div className="mt-6 flex items-start gap-2 text-sm text-muted-foreground">
         <ShieldCheck className="h-4 w-4 text-gold mt-0.5 shrink-0" />
         <span>{variant.selfHealing}</span>
       </div>
 
+      {/* ACTION BUTTON */}
       <button
         type="button"
         onClick={onOpen}
@@ -504,6 +521,7 @@ const VariantCard = memo(function VariantCard({
         <ChevronDown className="h-4 w-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
       </button>
 
+      {/* FOOTER */}
       <div className="mt-6 pt-4 border-t border-border flex items-center gap-2 text-xs text-muted-foreground">
         <Award className="h-3.5 w-3.5 text-gold" />
         Hand-installed by certified specialists
