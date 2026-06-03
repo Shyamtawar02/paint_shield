@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import Image from "next/image"; 
 import {
   ChevronDown, Sparkles, ShieldCheck, Award, Sun, Droplets, Wand2, Ban, X, Layers, Thermometer, Gauge, Clock,
@@ -53,15 +53,60 @@ const careTips = [
 ];
 
 export default function HomePage() {
-  const { state } = useStore();
+  const { state, update } = useStore();
   
-  const initialCategoryId = state?.products?.[0]?.id ?? "";
-  const [activeCategoryId, setActiveCategoryId] = useState<string>(initialCategoryId);
+  const [activeCategoryId, setActiveCategoryId] = useState<string>("");
   const [active, setActive] = useState<{ product: Product; variant: ProductVariant } | null>(null);
   const [activePillar, setActivePillar] = useState(0);
 
-  const currentCategory =
-    state?.products?.find((p) => p.id === activeCategoryId) ?? state?.products?.[0];
+  // 1. INITIAL SYNC: Page load hote hi MongoDB se pure data ko bootstrap karna
+  useEffect(() => {
+    const loadFreshDatabaseData = async () => {
+      try {
+        // page.tsx ki line 66 ko aise badal kar test karo:
+const response = await fetch("http://localhost:3000/api/admin", { 
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_public_init_data" }),
+        });
+        
+        const resData = await response.json();
+
+        if (resData.success && resData.data) {
+          const { products, vlogs, faqs, studio } = resData.data;
+
+          // React Zustand/Context Store aur LocalStorage dono sync ho jayenge ek sath
+          update((s) => {
+            if (products) s.products = products;
+            if (vlogs) s.vlogs = vlogs;
+            if (faqs) s.faqs = faqs;
+            if (studio) s.studio = { ...s.studio, ...studio };
+            return s;
+          });
+
+          // Data aate hi pehle Category ID ko active select kar do taaki screen blank na dikhe
+          if (products && products.length > 0) {
+            setActiveCategoryId((prev) => prev || products[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to bootstrap public data from MongoDB:", err);
+      }
+    };
+
+    loadFreshDatabaseData();
+  }, []);
+
+  // Fallback handle karne ke liye categories arrays aur dynamic matching active filter logic
+  const categories = state?.products ?? [];
+  const currentCategory = categories.find((p) => p.id === activeCategoryId) ?? categories[0];
+
+  // Agar async fetch chalu hai aur state initialize ho rahi hai, toh user ko first element automatically map ho jaye
+  useEffect(() => {
+    if (categories.length > 0 && !activeCategoryId) {
+      setActiveCategoryId(categories[0].id);
+    }
+  }, [categories, activeCategoryId]);
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased selection:bg-gold/30 selection:text-white">
@@ -114,176 +159,175 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
 
       {/* WHY CHOOSE — synced with pillar imagery */}
-  <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-  <div className="text-center max-w-2xl mx-auto mb-14">
-    <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Why PAINT SHIELD</p>
-    <h2 className="font-display text-4xl md:text-5xl">Engineered to disappear.</h2>
-    <p className="mt-4 text-muted-foreground">Four pillars define every film we install. Tap a pillar to see it in action.</p>
-  </div>
+      <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Why PAINT SHIELD</p>
+          <h2 className="font-display text-4xl md:text-5xl">Engineered to disappear.</h2>
+          <p className="mt-4 text-muted-foreground">Four pillars define every film we install. Tap a pillar to see it in action.</p>
+        </div>
 
-  <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-stretch">
-    
-    {/* DESKTOP IMAGE VIEW: Only visible on lg (Desktop) screens */}
-    <div className="hidden lg:block relative rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40 min-h-[450px]">
-      {benefits.map((b, i) => (
-        <Image
-          key={b.title}
-          src={b.image}
-          alt={b.title}
-          fill
-          sizes="50vw"
-          className={`object-cover transition-opacity duration-700 ease-out ${
-            activePillar === i ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
-      <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-2">Pillar 0{activePillar + 1}</p>
-        <h3 className="font-display text-4xl text-white">{benefits[activePillar].title}</h3>
-        <p className="mt-2 text-white/80 text-sm max-w-md">{benefits[activePillar].text}</p>
-      </div>
-    </div>
-
-    {/* PILLARS / BUTTONS LIST */}
-    <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border sm:grid-cols-2 lg:grid-cols-1">
-      {benefits.map(({ Icon, title, text, image }, i) => {
-        const isActive = activePillar === i;
-        return (
-          <div
-            key={title}
-            className={`flex flex-col transition-all ${
-              isActive ? "bg-secondary/60" : "bg-card"
-            }`}
-          >
-            {/* Main Accordion/Tab Trigger */}
-            <button
-              type="button"
-              onClick={() => setActivePillar(i)}
-              onMouseEnter={() => setActivePillar(i)}
-              className="text-left p-6 sm:p-7 flex flex-col items-start gap-3 w-full outline-none"
-            >
-              <div className={`h-11 w-11 rounded-full grid place-items-center transition-colors ${
-                isActive ? "bg-gold text-foreground shadow-gold" : "border border-gold/40 text-gold"
-              }`}>
-                <Icon className="h-4 w-4" />
-              </div>
-              <h3 className="font-display text-lg">{title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
-              <span className={`mt-1 h-px transition-all ${isActive ? "bg-gold w-16" : "bg-border w-10"}`} />
-            </button>
-
-            {/* MOBILE IMAGE SLOT: Renders right below the text when active on mobile/tablet */}
-            {isActive && (
-              <div className="block lg:hidden px-6 pb-6 w-full animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-border/60 shadow-md">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </div>
-            )}
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-stretch">
+          
+          {/* DESKTOP IMAGE VIEW: Only visible on lg (Desktop) screens */}
+          <div className="hidden lg:block relative rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40 min-h-[450px]">
+            {benefits.map((b, i) => (
+              <Image
+                key={b.title}
+                src={b.image}
+                alt={b.title}
+                fill
+                sizes="50vw"
+                className={`object-cover transition-opacity duration-700 ease-out ${
+                  activePillar === i ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
+            <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-2">Pillar 0{activePillar + 1}</p>
+              <h3 className="font-display text-4xl text-white">{benefits[activePillar].title}</h3>
+              <p className="mt-2 text-white/80 text-sm max-w-md">{benefits[activePillar].text}</p>
+            </div>
           </div>
-        );
-      })}
-    </div>
 
-  </div>
-</section>
+          {/* PILLARS / BUTTONS LIST */}
+          <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border sm:grid-cols-2 lg:grid-cols-1">
+            {benefits.map(({ Icon, title, text, image }, i) => {
+              const isActive = activePillar === i;
+              return (
+                <div
+                  key={title}
+                  className={`flex flex-col transition-all ${
+                    isActive ? "bg-secondary/60" : "bg-card"
+                  }`}
+                >
+                  {/* Main Accordion/Tab Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setActivePillar(i)}
+                    onMouseEnter={() => setActivePillar(i)}
+                    className="text-left p-6 sm:p-7 flex flex-col items-start gap-3 w-full outline-none"
+                  >
+                    <div className={`h-11 w-11 rounded-full grid place-items-center transition-colors ${
+                      isActive ? "bg-gold text-foreground shadow-gold" : "border border-gold/40 text-gold"
+                    }`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <h3 className="font-display text-lg">{title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+                    <span className={`mt-1 h-px transition-all ${isActive ? "bg-gold w-16" : "bg-border w-10"}`} />
+                  </button>
+
+                  {/* MOBILE IMAGE SLOT: Renders right below the text when active on mobile/tablet */}
+                  {isActive && (
+                    <div className="block lg:hidden px-6 pb-6 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-border/60 shadow-md">
+                        <Image
+                          src={image}
+                          alt={title}
+                          fill
+                          sizes="(max-width: 1024px) 100vw"
+                          className="object-cover"
+                          priority
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
 
       <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
 
       {/* PRODUCTS — CATEGORY SWITCHER */}
- <section id="tiers" className="bg-secondary/30 border-y border-border py-24 md:py-32">
-  <div className="mx-auto max-w-7xl px-6">
-    <div className="text-center max-w-2xl mx-auto mb-12">
-      <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Our Protection Suite</p>
-      <h2 className="font-display text-4xl md:text-5xl">Choose your shield.</h2>
-      <p className="mt-4 text-muted-foreground">
-        Select a category, then tap any variant to view its full technical specification.
-      </p>
-    </div>
-
-    <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
-      {state?.products?.map((p) => {
-        const isActive = currentCategory?.id === p.id;
-        return (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setActiveCategoryId(p.id)}
-            className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] border transition-all ${
-              isActive
-                ? "bg-gradient-gold text-background border-transparent shadow-gold"
-                : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-gold/60"
-            }`}
-          >
-            {p.name}
-          </button>
-        );
-      })}
-    </div>
-
-    {currentCategory && (
-      <div key={currentCategory.id} className="animate-fade-in">
-        <div className="grid gap-10 lg:grid-cols-[5fr_7fr] items-start mb-12">
-          
-          {/* DYNAMIC IMAGE BLOCK */}
-          <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40">
-            <Image
-              // FIXED: Ab yeh data direct state/backend se image uthayega. Agar p.image nahi hoga tabhi local wrapper use karega.
-              src={currentCategory.image || productImages[currentCategory.id] || prodPpf}
-              alt={currentCategory.name}
-              fill
-              sizes="(max-width: 1024px) 100vw, 35vw"
-              className="object-cover"
-              // Remote URL filters handler optimized
-              unoptimized={typeof currentCategory.image === 'string' && currentCategory.image.startsWith('http')}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent z-10" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-2">{currentCategory.tagline}</p>
-              <h3 className="font-display text-3xl md:text-4xl text-white">{currentCategory.name}</h3>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-gold">Available Variants</p>
-            <h4 className="font-display text-2xl md:text-3xl">Choose the right grade for your build.</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Every variant is hand-installed in our clean-room bay. Tap any card below for a full technical specification.
+      <section id="tiers" className="bg-secondary/30 border-y border-border py-24 md:py-32">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Our Protection Suite</p>
+            <h2 className="font-display text-4xl md:text-5xl">Choose your shield.</h2>
+            <p className="mt-4 text-muted-foreground">
+              Select a category, then tap any variant to view its full technical specification.
             </p>
-            <div className="gold-divider" />
-            <ul className="space-y-3">
-              {currentCategory.variants?.map((v) => (
-                <li key={v.id} className="flex items-center justify-between gap-4 text-sm">
-                  <span className="font-display text-base">{v.typeName}</span>
-                  <span className="text-gold text-xs uppercase tracking-[0.2em]">{v.warranty}</span>
-                </li>
-              ))}
-            </ul>
           </div>
-        </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {currentCategory.variants?.map((v, i) => (
-            <VariantCard
-              key={v.id}
-              variant={v}
-              featured={i === 1 && currentCategory.variants.length > 2}
-              onOpen={() => setActive({ product: currentCategory, variant: v })}
-            />
-          ))}
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
+            {categories.map((p) => {
+              const isActive = currentCategory?.id === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActiveCategoryId(p.id)}
+                  className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] border transition-all ${
+                    isActive
+                      ? "bg-gradient-gold text-background border-transparent shadow-gold"
+                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-gold/60"
+                  }`}
+                >
+                  {p.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {currentCategory && (
+            <div key={currentCategory.id} className="animate-fade-in">
+              <div className="grid gap-10 lg:grid-cols-[5fr_7fr] items-start mb-12">
+                
+                {/* DYNAMIC IMAGE BLOCK */}
+                <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40">
+                  <Image
+                    src={currentCategory.image || productImages[currentCategory.id] || prodPpf}
+                    alt={currentCategory.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 35vw"
+                    className="object-cover"
+                    unoptimized={typeof currentCategory.image === 'string' && currentCategory.image.startsWith('http')}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent z-10" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-2">{currentCategory.tagline}</p>
+                    <h3 className="font-display text-3xl md:text-4xl text-white">{currentCategory.name}</h3>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-xs uppercase tracking-[0.25em] text-gold">Available Variants</p>
+                  <h4 className="font-display text-2xl md:text-3xl">Choose the right grade for your build.</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Every variant is hand-installed in our clean-room bay. Tap any card below for a full technical specification.
+                  </p>
+                  <div className="gold-divider" />
+                  <ul className="space-y-3">
+                    {currentCategory.variants?.map((v) => (
+                      <li key={v.id} className="flex items-center justify-between gap-4 text-sm">
+                        <span className="font-display text-base">{v.name}</span>
+                        <span className="text-gold text-xs uppercase tracking-[0.2em]">{v.warranty}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {currentCategory.variants?.map((v, i) => (
+                  <VariantCard
+                    key={v.id}
+                    variant={v}
+                    featured={i === 1 && currentCategory.variants.length > 2}
+                    onOpen={() => setActive({ product: currentCategory, variant: v })}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    )}
-  </div>
-</section>
+      </section>
+
       {/* BEFORE / AFTER */}
       <section className="mx-auto max-w-6xl px-6 py-24 md:py-32">
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -294,7 +338,7 @@ export default function HomePage() {
         <BeforeAfter />
       </section>
 
-      {/* PRO CARE (image_3a4030.png section fixed) */}
+      {/* PRO CARE */}
       <section className="bg-secondary/30 border-y border-border py-24 md:py-32">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
@@ -305,7 +349,6 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-3">
             {careTips.map(({ Icon, title, text }) => (
               <article key={title} className="rounded-2xl border border-border bg-card p-8 shadow-soft hover:shadow-luxe hover:-translate-y-1 transition-all">
-                {/* FIXED: Changed text-white/text-background to text-foreground (Black/Charcoal vibe) */}
                 <div className="h-14 w-14 rounded-full bg-gradient-gold grid place-items-center shadow-gold mb-6">
                   <Icon className="h-6 w-6 text-foreground" />
                 </div>
@@ -344,10 +387,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe order-2 md:order-1">
             <Image src={gallery1} alt="Studio bay" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-            <div className="absolute bottom-6 left-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 max-w-[200px] hidden md:block">
+            {/* <div className="absolute bottom-6 left-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 max-w-[200px] hidden md:block">
               <p className="text-xs uppercase tracking-[0.2em] text-gold">Certified</p>
               <p className="font-display text-lg mt-1">XPEL · STEK · Suntek</p>
-            </div>
+            </div> */}
           </div>
           <div className="order-1 md:order-2">
             <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Our Craftsmanship</p>
@@ -441,7 +484,7 @@ const VariantCard = memo(function VariantCard({
         <Sparkles className="h-4 w-4" />
         <p className="text-xs uppercase tracking-[0.25em]">{variant.warranty}</p>
       </div>
-      <h3 className="font-display text-3xl mt-3">{variant.typeName}</h3>
+      <h3 className="font-display text-3xl mt-3">{variant.name}</h3>
 
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <Spec label="Thickness" value={variant.microns} />
@@ -478,6 +521,8 @@ function Spec({ label, value }: { label: string; value: string }) {
   );
 }
 
+// SPEC SHEET (MODAL) Component - FIXED with proper database keys fallback
+// SPEC SHEET (MODAL) Component - FIXED WITH LIVE DATABASE IMAGE SOURCE
 function SpecSheet({
   product, variant, onClose,
 }: { product: Product; variant: ProductVariant; onClose: () => void }) {
@@ -489,7 +534,9 @@ function SpecSheet({
     { Icon: Clock, label: "Warranty", value: variant.warranty },
     { Icon: Wand2, label: "Self-Healing", value: variant.selfHealing },
   ];
-  const previewImage = productImages[product.id] ?? prodPpf;
+
+  // 🔥 FIX 1: Pehle product database image uthao, fir local lookup, fir master fallback
+  const previewImage = product.image || productImages[product.id] || prodPpf;
 
   return (
     <div 
@@ -504,10 +551,16 @@ function SpecSheet({
           <div className="relative bg-secondary/40 hidden md:block md:h-full min-h-[450px]">
             <Image 
               src={previewImage} 
-              alt={variant.typeName} 
+              alt={variant.typeName || product.name} 
               fill 
               sizes="35vw"
               className="object-cover" 
+              // 🔥 FIX 2: Next.js image pipeline block na kare dynamic URL ya base64 ko, isliye unoptimized flag
+              unoptimized={
+                typeof product.image === 'string' && 
+                (product.image.startsWith('http') || product.image.startsWith('data:'))
+              }
+              priority={true} // Taaki modal khulte hi blank box na dikhe, instant image render ho
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-10" />
             <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
@@ -521,7 +574,9 @@ function SpecSheet({
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-gold">{product.name}</p>
                 <h3 className="font-display text-2xl md:text-3xl mt-2">{variant.typeName}</h3>
-                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{variant.details}</p>
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                  {variant.detailedInfo || variant.details}
+                </p>
               </div>
               <button 
                 type="button" 
@@ -540,7 +595,6 @@ function SpecSheet({
               <div className="divide-y divide-border">
                 {rows.map(({ Icon, label, value }) => (
                   <div key={label} className="flex items-center gap-4 py-4 md:py-5">
-                    {/* FIXED: Changed text-background to text-foreground for modal spec details */}
                     <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center text-foreground shrink-0 shadow-gold">
                       <Icon className="h-4 w-4" />
                     </div>
@@ -562,7 +616,6 @@ function SpecSheet({
     </div>
   );
 }
-
 function GalleryPhoto({ src, ratio, caption }: { src: NextStaticAsset; ratio: string; caption: string }) {
   return (
     <figure className="break-inside-avoid mb-6 rounded-xl overflow-hidden border border-border bg-card shadow-soft group">
@@ -577,6 +630,7 @@ function GalleryPhoto({ src, ratio, caption }: { src: NextStaticAsset; ratio: st
   );
 }
 
+// DYNAMIC VIDEO / VLOG COMPONENT
 function GalleryVideo({ vlog }: { vlog: { url: string; title: string; description: string } }) {
   return (
     <figure className="break-inside-avoid mb-6 rounded-xl overflow-hidden border border-border bg-card shadow-soft">

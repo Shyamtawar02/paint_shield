@@ -460,11 +460,10 @@ function CustomerModal({
     </div>
   );
 }
-
 /* --------- PRODUCTS PANEL --------- */
 const emptyProduct: Omit<Product, "id"> = { name: "", tagline: "", variants: [] };
 const emptyVariant: Omit<ProductVariant, "id"> = {
-  typeName: "", microns: "", warranty: "", material: "Aliphatic TPU", glossLevel: "", heatResistance: "", selfHealing: "", details: ""
+  typeName: "",name:"", microns: "", warranty: "", material: "Aliphatic TPU", glossLevel: "", heatResistance: "", selfHealing: "", details: "", detailedInfo: ""
 };
 
 function ProductsPanel() {
@@ -489,6 +488,7 @@ function ProductsPanel() {
               id: cat.id,
               name: cat.name,
               tagline: cat.tagline,
+              image: cat.image || "", // 🔥 FIXED: Fetch karte waqt image string ko local state me load karo
               variants: cat.variants.map((v: any) => ({
                 id: v.id,
                 typeName: v.name,
@@ -528,10 +528,18 @@ function ProductsPanel() {
         {state.products.map((p) => (
           <div key={p.id} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-gold">{p.tagline}</p>
-                <h3 className="font-display text-2xl mt-1">{p.name}</h3>
-                <p className="text-xs text-muted-foreground mt-1">{p.variants.length} variant(s)</p>
+              <div className="flex items-center gap-4">
+                {/* 🔥 LIVE DATABASE IMAGE PREVIEW IN PANEL LIST */}
+                {p.image && (
+                  <div className="h-14 w-14 rounded-lg overflow-hidden border border-border bg-secondary/30 shrink-0">
+                    <img src={p.image} alt="" className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-gold">{p.tagline}</p>
+                  <h3 className="font-display text-2xl mt-1">{p.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{p.variants.length} variant(s)</p>
+                </div>
               </div>
               <div className="flex gap-1 items-center">
                 <button onClick={() => setVariantCtx({ product: p, variant: null })} className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-border hover:border-gold hover:text-gold transition-colors">
@@ -618,7 +626,12 @@ function ProductsPanel() {
                 body: JSON.stringify({
                   action: isNew ? "create_category" : "update_category",
                   categoryId: editingCat?.id,
-                  categoryData: { name: pData.name, tagline: pData.tagline }
+                  // 🔥 FIXED: image property ko payload me bheja taaki backend ise receive kar sake
+                  categoryData: { 
+                    name: pData.name, 
+                    tagline: pData.tagline,
+                    image: pData.image || "" 
+                  }
                 })
               });
               const data = await res.json();
@@ -692,7 +705,6 @@ function ProductsPanel() {
 
 function CategoryModal({ initial, isNew, onClose, onSave }: { initial: Product; isNew?: boolean; onClose: () => void; onSave: (p: Product) => void }) {
   const [p, setP] = useState(initial);
-  const [loading, setLoading] = useState(false); // Action feedback ke liye
 
   // 🔥 Image ko base64 string mein convert karke state mein save karne ke liye helper
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -768,7 +780,6 @@ function CategoryModal({ initial, isNew, onClose, onSave }: { initial: Product; 
     </div>
   );
 }
-
 function VariantModal({ product, initial, isNew, onClose, onSave }: { product: Product; initial: ProductVariant; isNew?: boolean; onClose: () => void; onSave: (v: ProductVariant) => void }) {
   const [v, setV] = useState(initial);
   const set = <K extends keyof ProductVariant>(k: K, val: ProductVariant[K]) => setV((x) => ({ ...x, [k]: val }));
@@ -806,51 +817,170 @@ function VariantModal({ product, initial, isNew, onClose, onSave }: { product: P
 
 /* --------- VLOGS PANEL --------- */
 function VlogsPanel() {
+  // Aapka existing store state aur update function
   const { state, update } = useStore();
   const [v, setV] = useState<Omit<Vlog, "id">>({ title: "", description: "", url: "" });
+  const [loading, setLoading] = useState(false);
+
+  // 1. Initial Sync: Page load hote hi MongoDB se data laakar local store me inject karna
+  useEffect(() => {
+    const syncWithDatabase = async () => {
+      try {
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_vlogs" }),
+        });
+        const resData = await response.json();
+        
+        if (resData.success && resData.data) {
+          // Local store ko database ke data se overwrite/sync karna
+          update((s) => {
+            s.vlogs = resData.data;
+            return s;
+          });
+        }
+      } catch (err) {
+        console.error("Database sync failed for vlogs:", err);
+      }
+    };
+
+    syncWithDatabase();
+  }, []); // Khali array taaki component mount par sirf ek baar chale
+
+  // 2. Submit Handler: MongoDB me save karega, fir response 'id' ke sath Local Store me add karega
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_vlog",
+          vlogData: v,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (resData.success) {
+        // DB me save ho gaya! Ab local store me bhi push kar dete hain database ki genuine '_id' ke sath
+        update((s) => {
+          s.vlogs.push({ 
+            ...v, 
+            id: resData.id // Backend se aayi hui real MongoDB ObjectId use hogi yahan
+          });
+          return s;
+        });
+
+        // Form reset
+        setV({ title: "", description: "", url: "" });
+      } else {
+        alert(resData.error || "Failed to save in Database");
+      }
+    } catch (err) {
+      console.error("Error creating vlog:", err);
+      alert("Something went wrong while saving.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 3. Delete Handler: MongoDB se delete karega, fir state/store se remove karega
+  const handleDelete = async (vlogId: string, title: string) => {
+    if (!confirm(`Delete vlog "${title}"?`)) return;
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete_vlog",
+          vlogId: vlogId, // MongoDB is id ko delete karega
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (resData.success) {
+        // DB se remove hone ke baad, local store ko update/filter karo
+        update((s) => {
+          s.vlogs = s.vlogs.filter((x) => x.id !== vlogId);
+          return s;
+        });
+      } else {
+        alert(resData.error || "Failed to delete from Database");
+      }
+    } catch (err) {
+      console.error("Error deleting vlog:", err);
+    }
+  };
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
+      {/* FORM SECTION */}
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          update((s) => {
-            s.vlogs.push({ ...v, id: id() });
-            return s;
-          });
-          setV({ title: "", description: "", url: "" });
-        }}
+        onSubmit={handleSubmit}
         className="rounded-xl border border-border bg-card p-6 shadow-soft space-y-4 h-fit"
       >
         <h3 className="font-display text-2xl">Add Vlog</h3>
-        <Field label="Title"><input className={inputCls} value={v.title} required onChange={(e) => setV(prev => ({ ...prev, title: e.target.value }))} /></Field>
-        <Field label="Description"><textarea rows={3} className={inputCls} value={v.description} onChange={(e) => setV(prev => ({ ...prev, description: e.target.value }))} /></Field>
-        <Field label="Video URL (embed)"><input className={inputCls} placeholder="https://www.youtube.com/embed/…" value={v.url} required onChange={(e) => setV(prev => ({ ...prev, url: e.target.value }))} /></Field>
-        <button className={btnGold}><Plus className="h-4 w-4" /> Publish</button>
+        
+        <Field label="Title">
+          <input 
+            className={inputCls} 
+            value={v.title} 
+            required 
+            onChange={(e) => setV(prev => ({ ...prev, title: e.target.value }))} 
+          />
+        </Field>
+        
+        <Field label="Description">
+          <textarea 
+            rows={3} 
+            className={inputCls} 
+            value={v.description} 
+            onChange={(e) => setV(prev => ({ ...prev, description: e.target.value }))} 
+          />
+        </Field>
+        
+        <Field label="Video URL (embed)">
+          <input 
+            className={inputCls} 
+            placeholder="https://www.youtube.com/embed/…" 
+            value={v.url} 
+            required 
+            onChange={(e) => setV(prev => ({ ...prev, url: e.target.value }))} 
+          />
+        </Field>
+        
+        <button type="submit" disabled={loading} className={btnGold}>
+          <Plus className="h-4 w-4" /> {loading ? "Publishing..." : "Publish"}
+        </button>
       </form>
 
+      {/* DISPLAY LIST SECTION (Purely sync with state.vlogs) */}
       <div className="space-y-3">
-        {state.vlogs.map((vl) => (
-          <div key={vl.id} className="rounded-xl border border-border bg-card p-4 flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="font-medium truncate">{vl.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{vl.url}</p>
+        {state.vlogs.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">No vlogs found. Add your first vlog!</p>
+        ) : (
+          state.vlogs.map((vl) => (
+            <div key={vl.id} className="rounded-xl border border-border bg-card p-4 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium truncate">{vl.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{vl.url}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDelete(vl.id, vl.title)}
+                className="h-9 w-9 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive shrink-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={() => { 
-                if (confirm(`Delete vlog "${vl.title}"?`)) {
-                  update((s) => {
-                    s.vlogs = s.vlogs.filter((x) => x.id !== vl.id);
-                    return s;
-                  });
-                }
-              }}
-              className="h-9 w-9 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -860,62 +990,188 @@ function VlogsPanel() {
 function FaqPanel() {
   const { state, update } = useStore();
   const [draft, setDraft] = useState<Omit<Faq, "id">>({ q: "", a: "" });
+  const [loading, setLoading] = useState(false);
+
+  // 1. Database Sync on Load
+  useEffect(() => {
+    const syncFaqs = async () => {
+      try {
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_faqs" }),
+        });
+        const resData = await response.json();
+        if (resData.success && resData.data) {
+          update((s) => {
+            s.faqs = resData.data;
+            return s;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch FAQs from DB:", err);
+      }
+    };
+    syncFaqs();
+  }, []);
+
+  // 2. Form Submit (Add to DB + Local Store)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_faq",
+          faqData: draft,
+        }),
+      });
+      const resData = await response.json();
+
+      if (resData.success) {
+        update((s) => {
+          s.faqs.push({ ...draft, id: resData.id }); // Using the DB insertedId
+          return s;
+        });
+        setDraft({ q: "", a: "" });
+      } else {
+        alert(resData.error || "Failed to create FAQ");
+      }
+    } catch (err) {
+      console.error("Error creating FAQ:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          update((s) => {
-            s.faqs.push({ ...draft, id: id() });
-            return s;
-          });
-          setDraft({ q: "", a: "" });
-        }}
+        onSubmit={handleSubmit}
         className="rounded-xl border border-border bg-card p-6 shadow-soft space-y-4 h-fit"
       >
         <h3 className="font-display text-2xl">Add FAQ</h3>
-        <Field label="Question"><input className={inputCls} required value={draft.q} onChange={(e) => setDraft(prev => ({ ...prev, q: e.target.value }))} /></Field>
-        <Field label="Answer"><textarea rows={4} className={inputCls} required value={draft.a} onChange={(e) => setDraft(prev => ({ ...prev, a: e.target.value }))} /></Field>
-        <button className={btnGold}><Plus className="h-4 w-4" /> Publish</button>
+        <Field label="Question">
+          <input 
+            className={inputCls} 
+            required 
+            value={draft.q} 
+            onChange={(e) => setDraft(prev => ({ ...prev, q: e.target.value }))} 
+          />
+        </Field>
+        <Field label="Answer">
+          <textarea 
+            rows={4} 
+            className={inputCls} 
+            required 
+            value={draft.a} 
+            onChange={(e) => setDraft(prev => ({ ...prev, a: e.target.value }))} 
+          />
+        </Field>
+        <button type="submit" disabled={loading} className={btnGold}>
+          <Plus className="h-4 w-4" /> {loading ? "Publishing..." : "Publish"}
+        </button>
       </form>
 
       <div className="space-y-3">
-        {state.faqs.map((f) => (
-          <FaqRow key={f.id} faq={f} />
-        ))}
+        {state.faqs.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">No FAQs available. Create one!</p>
+        ) : (
+          state.faqs.map((f) => (
+            <FaqRow key={f.id} faq={f} />
+          ))
+        )}
       </div>
     </div>
   );
 }
 
+/* --------- FAQ ROW (EDIT & DELETE INCLUDED) --------- */
 function FaqRow({ faq }: { faq: Faq }) {
   const { update } = useStore();
   const [edit, setEdit] = useState(false);
   const [d, setD] = useState(faq);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     setD(faq);
   }, [faq]);
 
+  // Handle Edit Save to DB
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdating(true);
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_faq",
+          faqId: faq.id,
+          faqData: { q: d.q, a: d.a },
+        }),
+      });
+      const resData = await response.json();
+
+      if (resData.success) {
+        update((s) => {
+          s.faqs = s.faqs.map((x) => (x.id === faq.id ? d : x));
+          return s;
+        });
+        setEdit(false);
+      } else {
+        alert(resData.error || "Failed to update FAQ");
+      }
+    } catch (err) {
+      console.error("Error updating FAQ:", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Handle Delete from DB
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this FAQ?")) return;
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete_faq",
+          faqId: faq.id,
+        }),
+      });
+      const resData = await response.json();
+
+      if (resData.success) {
+        update((s) => {
+          s.faqs = s.faqs.filter((x) => x.id !== faq.id);
+          return s;
+        });
+      } else {
+        alert(resData.error || "Failed to delete FAQ");
+      }
+    } catch (err) {
+      console.error("Error deleting FAQ:", err);
+    }
+  };
+
   if (edit) {
     return (
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          update((s) => {
-            s.faqs = s.faqs.map((x) => (x.id === faq.id ? d : x));
-            return s;
-          });
-          setEdit(false);
-        }}
+        onSubmit={handleEditSubmit}
         className="rounded-xl border border-gold bg-card p-4 space-y-3 shadow-soft"
       >
         <input className={inputCls} value={d.q} onChange={(e) => setD(prev => ({ ...prev, q: e.target.value }))} required />
         <textarea rows={3} className={inputCls} value={d.a} onChange={(e) => setD(prev => ({ ...prev, a: e.target.value }))} required />
         <div className="flex gap-2 justify-end">
-          <button type="button" onClick={() => { setD(faq); setEdit(false); }} className="px-4 py-2 text-sm rounded-full border border-border hover:bg-secondary">Cancel</button>
-          <button className={btnGold}>Save</button>
+          <button type="button" disabled={updating} onClick={() => { setD(faq); setEdit(false); }} className="px-4 py-2 text-sm rounded-full border border-border hover:bg-secondary">Cancel</button>
+          <button type="submit" disabled={updating} className={btnGold}>{updating ? "Saving..." : "Save"}</button>
         </div>
       </form>
     );
@@ -928,16 +1184,10 @@ function FaqRow({ faq }: { faq: Faq }) {
         <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{faq.a}</p>
       </div>
       <div className="flex gap-1 shrink-0">
-        <button onClick={() => setEdit(true)} className="h-9 w-9 grid place-items-center rounded-md hover:bg-secondary"><Pencil className="h-4 w-4" /></button>
+        <button type="button" onClick={() => setEdit(true)} className="h-9 w-9 grid place-items-center rounded-md hover:bg-secondary"><Pencil className="h-4 w-4" /></button>
         <button
-          onClick={() => { 
-            if (confirm("Are you sure you want to delete this FAQ?")) {
-              update((s) => {
-                s.faqs = s.faqs.filter((x) => x.id !== faq.id);
-                return s;
-              });
-            }
-          }}
+          type="button"
+          onClick={handleDelete}
           className="h-9 w-9 grid place-items-center rounded-md hover:bg-destructive/10 text-destructive"
         >
           <Trash2 className="h-4 w-4" />
@@ -952,42 +1202,129 @@ function StudioPanel() {
   const { state, update } = useStore();
   const [s, setS] = useState<Studio>(state.studio);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // 1. Initial Sync: Database se studio profiles load karna
   useEffect(() => {
-    setS(state.studio);
-  }, [state.studio]);
+    const fetchStudioDetails = async () => {
+      try {
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_studio" }),
+        });
+        const resData = await response.json();
+        
+        if (resData.success && resData.data) {
+          // Client Store ko backend DB ke sath update kar rahe hain
+          update((st) => {
+            st.studio = resData.data;
+            return st;
+          });
+          setS(resData.data);
+        }
+      } catch (err) {
+        console.error("Failed to sync studio data with DB:", err);
+      }
+    };
 
+    fetchStudioDetails();
+  }, []);
+
+  // Safe setter function fields ke liye
   const set = <K extends keyof Studio>(k: K, v: Studio[K]) => setS((p) => ({ ...p, [k]: v }));
 
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
+  // 2. Form Submit: MongoDB & LocalStore me sync karna
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_studio",
+          studioData: s,
+        }),
+      });
+      const resData = await response.json();
+
+      if (resData.success) {
+        // Local store ko update karo taaki pure platform par instantly changes live ho jayein
         update((st) => {
           st.studio = s;
           return st;
         });
+        
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
-      }}
+      } else {
+        alert(resData.error || "Failed to update studio info in DB");
+      }
+    } catch (err) {
+      console.error("Error updating studio details:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
       className="max-w-3xl rounded-2xl border border-border bg-card p-8 shadow-soft grid gap-4 sm:grid-cols-2"
     >
       <div className="sm:col-span-2">
         <h3 className="font-display text-2xl">Studio Contact</h3>
         <p className="text-sm text-muted-foreground">Updates the public footer + WhatsApp button.</p>
       </div>
-      <Field label="Address" full><input className={inputCls} value={s.address} onChange={(e) => set("address", e.target.value)} /></Field>
-      <Field label="Business Hours"><input className={inputCls} value={s.hours} onChange={(e) => set("hours", e.target.value)} /></Field>
-      <Field label="Phone"><input className={inputCls} value={s.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
-      <Field label="WhatsApp (digits only)"><input className={inputCls} value={s.whatsapp} onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))} /></Field>
-      <Field label="Email"><input type="email" className={inputCls} value={s.email} onChange={(e) => set("email", e.target.value)} /></Field>
-      <Field label="Instagram URL"><input className={inputCls} value={s.instagram} onChange={(e) => set("instagram", e.target.value)} /></Field>
-      <Field label="Facebook URL"><input className={inputCls} value={s.facebook} onChange={(e) => set("facebook", e.target.value)} /></Field>
-      <Field label="YouTube URL" full><input className={inputCls} value={s.youtube} onChange={(e) => set("youtube", e.target.value)} /></Field>
-      <Field label="About Studio" full><textarea rows={5} className={inputCls} value={s.about} onChange={(e) => set("about", e.target.value)} /></Field>
+      
+      <Field label="Address" full>
+        <input className={inputCls} value={s.address} onChange={(e) => set("address", e.target.value)} required />
+      </Field>
+      
+      <Field label="Business Hours">
+        <input className={inputCls} value={s.hours} onChange={(e) => set("hours", e.target.value)} required />
+      </Field>
+      
+      <Field label="Phone">
+        <input className={inputCls} value={s.phone} onChange={(e) => set("phone", e.target.value)} required />
+      </Field>
+      
+      <Field label="WhatsApp (digits only)">
+        <input 
+          className={inputCls} 
+          value={s.whatsapp} 
+          required 
+          onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))} 
+        />
+      </Field>
+      
+      <Field label="Email">
+        <input type="email" className={inputCls} value={s.email} onChange={(e) => set("email", e.target.value)} required />
+      </Field>
+      
+      <Field label="Instagram URL">
+        <input className={inputCls} value={s.instagram} onChange={(e) => set("instagram", e.target.value)} />
+      </Field>
+      
+      <Field label="Facebook URL">
+        <input className={inputCls} value={s.facebook} onChange={(e) => set("facebook", e.target.value)} />
+      </Field>
+      
+      <Field label="YouTube URL" full>
+        <input className={inputCls} value={s.youtube} onChange={(e) => set("youtube", e.target.value)} />
+      </Field>
+      
+      <Field label="About Studio" full>
+        <textarea rows={5} className={inputCls} value={s.about} onChange={(e) => set("about", e.target.value)} required />
+      </Field>
+      
       <div className="sm:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-border">
-        {saved && <span className="text-sm text-gold">Saved ✓</span>}
-        <button className={btnGold}>Save Changes</button>
+        {saved && <span className="text-sm text-gold animate-fade-in">Saved ✓</span>}
+        <button type="submit" disabled={loading} className={btnGold}>
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
       </div>
     </form>
   );
