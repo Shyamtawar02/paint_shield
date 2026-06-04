@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   ChevronDown, Sparkles, ShieldCheck, Award, Sun, Droplets, Wand2, Ban, X, Layers, Thermometer, Gauge, Clock,
   SprayCan, FlaskConical, MapPin, Phone,
+  Mail,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -135,10 +136,7 @@ export default function HomePage() {
             <h2 className="font-display text-4xl md:text-5xl leading-tight">An elite atelier for <em className="text-gradient-gold not-italic">automotive perfection.</em></h2>
             <div className="my-8 gold-divider" />
             <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-              Gold Guard Forge is an elite automotive detailing studio dedicated to preserving your
-              vehicle&apos;s pristine condition. We combine international standards, clean-room environments,
-              and certified master installers to deliver flawless Paint Protection Film (PPF) and Ceramic
-              Coating services. Your vehicle deserves nothing less than perfection.
+           Paint Shield is a premium automotive protection studio committed to preserving the beauty and integrity of your vehicle. Through expert craftsmanship, advanced protection technologies, and meticulous attention to detail, we deliver world-class Paint Protection Film (PPF) and Ceramic Coating solutions designed to keep your vehicle looking its best for years to come.
             </p>
             <div className="mt-8 grid grid-cols-3 gap-6">
               {[
@@ -397,15 +395,15 @@ export default function HomePage() {
             <h2 className="font-display text-4xl md:text-5xl leading-tight">Measured in <em className="text-gradient-gold not-italic">microns,</em> proven in years.</h2>
             <p className="mt-6 text-muted-foreground leading-relaxed">{state?.studio?.about}</p>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Every panel is decontaminated, clay-barred and IPA-wiped before a single inch of film touches paint. Our installers train annually with XPEL and STEK, and we maintain a positive-pressure bay calibrated to 22°C and 45% humidity.
+             At Paint Shield, every installation is performed with uncompromising attention to detail. Our specialists follow a meticulous preparation and application process to ensure seamless protection, exceptional finish, and lasting performance.
             </p>
 
             <div className="my-8 gold-divider" />
 
             <div className="grid grid-cols-3 gap-6">
               {[
-                { k: "1,200+", v: "Cars Protected" },
-                { k: "8 yr", v: "Median Warranty" },
+                { k: "3000+", v: "Cars Protected" },
+                { k: "5 yr to 15 yr", v: " Warranty" },
                 { k: "0", v: "Compromises" },
               ].map((s) => (
                 <div key={s.v}>
@@ -417,8 +415,9 @@ export default function HomePage() {
 
             <div className="mt-8 grid sm:grid-cols-2 gap-4 text-sm">
               <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
-                <MapPin className="h-4 w-4 text-gold mt-0.5 shrink-0" />
-                <div><p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Studio</p><p>{state?.studio?.address}</p></div>
+            
+                <Mail className="h-4 w-4 text-gold mt-0.5 shrink-0" />
+                <div><p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Email</p> <p>{state?.studio?.email}</p></div>
               </div>
               <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
                 <Clock className="h-4 w-4 text-gold mt-0.5 shrink-0" />
@@ -426,7 +425,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card sm:col-span-2">
                 <Phone className="h-4 w-4 text-gold mt-0.5 shrink-0" />
-                <div><p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Bookings</p><p>{state?.studio?.phone}</p></div>
+                <div><p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Inquiry</p><p>{state?.studio?.phone}</p></div>
               </div>
             </div>
           </div>

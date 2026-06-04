@@ -32,7 +32,7 @@ export function SiteHeader() {
   </span>
 </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="/#tiers" className="hover:text-foreground transition">Tiers</a>
+            <a href="/#tiers" className="hover:text-foreground transition">PPF</a>
             <a href="/#gallery" className="hover:text-foreground transition">Studio</a>
             <Link href="/admin" className="hover:text-foreground transition">Admin</Link>
           </nav>

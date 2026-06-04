@@ -16,7 +16,7 @@ const fallbacks = [
 ];
 
 const slides = [
-  { src: hero1, fallback: fallbacks[0], eyebrow: "Aurum • Est. 2018", title: "The Art of", italic: "Protection.", body: "Hand-applied Paint Protection Film, calibrated for paint that deserves to outlive trends." },
+  { src: hero1, fallback: fallbacks[0], eyebrow: "Paint Shield • Est. 2018", title: "The Art of", italic: "Protection.", body: "Hand-applied Paint Protection Film, calibrated for paint that deserves to outlive trends." },
   { src: hero2, fallback: fallbacks[1], eyebrow: "Self-Healing TPU", title: "Engineered to", italic: "Disappear.", body: "Aliphatic films that resist yellowing, repel grime and heal under sunlight." },
   { src: hero3, fallback: fallbacks[2], eyebrow: "10-Year Warranty", title: "Showroom Gloss,", italic: "Forever.", body: "Hydrophobic, anti-stain, optically pure. Your paint, preserved at factory depth." },
 ];

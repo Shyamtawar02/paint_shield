@@ -276,7 +276,7 @@ function CustomersPanel() {
           </thead>
           <tbody>
             {fetchingData ? (
-              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">⏳ Loading dynamic records from Database...</td></tr>
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">⏳ Loading records...</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No customers found.</td></tr>
             ) : (
@@ -421,19 +421,19 @@ function CustomerModal({
           <button onClick={onClose} disabled={loading} className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary"><X className="h-4 w-4" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Customer Name"><input className={inputCls} value={c.customerName} required disabled={loading} onChange={(e) => set("customerName", e.target.value)} /></Field>
-          <Field label="Email"><input type="email" className={inputCls} value={c.email} disabled={loading} onChange={(e) => set("email", e.target.value)} /></Field>
+          <Field label="Customer Name"><input placeholder="Enter customer name" className={inputCls} value={c.customerName} required disabled={loading} onChange={(e) => set("customerName", e.target.value)} /></Field>
+          <Field label="Email"><input placeholder="customer@example.com" type="email" className={inputCls} value={c.email} disabled={loading} onChange={(e) => set("email", e.target.value)} /></Field>
           <Field label="Vehicle Model"><input className={inputCls} placeholder="e.g. Fortuner" value={c.vehicleModel} required disabled={loading} onChange={(e) => set("vehicleModel", e.target.value)} /></Field>
           <Field label="Vehicle No."><input className={inputCls} placeholder="DL-3C-AA-1111" value={c.vehicleNo} required disabled={loading} onChange={(e) => set("vehicleNo", e.target.value)} /></Field>
-          <Field label="Contact No."><input className={inputCls} value={c.contactNo} required disabled={loading} onChange={(e) => set("contactNo", e.target.value)} /></Field>
+          <Field label="Contact No."><input placeholder="+91 9876543210" className={inputCls} value={c.contactNo} required disabled={loading} onChange={(e) => set("contactNo", e.target.value)} /></Field>
           <Field label="Warranty (years)">
             <select className={inputCls} value={c.warrantyYears} disabled={loading} onChange={(e) => set("warrantyYears", e.target.value)}>
               {["5 years", "8 years", "10 years"].map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
           </Field>
-          <Field label="Service Date"><input type="date" className={inputCls} value={c.serviceDate} disabled={loading} onChange={(e) => set("serviceDate", e.target.value)} /></Field>
-          <Field label="KM Driven"><input className={inputCls} value={c.kmDriven} disabled={loading} onChange={(e) => set("kmDriven", e.target.value)} /></Field>
-          <Field label="Service Type" full><input className={inputCls} placeholder="PaintShield Premium Gloss PPF" value={c.serviceType} disabled={loading} onChange={(e) => set("serviceType", e.target.value)} /></Field>
+          <Field label="Installation Date"><input   placeholder="Select installation date" type="date" className={inputCls} value={c.serviceDate} disabled={loading} onChange={(e) => set("serviceDate", e.target.value)} /></Field>
+          <Field label="Studio Name"><input  placeholder="Paint Shield" className={inputCls} value={c.kmDriven} disabled={loading} onChange={(e) => set("kmDriven", e.target.value)} /></Field>
+          <Field label="PPF Variant" full><input className={inputCls} placeholder="PaintShield Premium Gloss PPF" value={c.serviceType} disabled={loading} onChange={(e) => set("serviceType", e.target.value)} /></Field>
 
           <div className="sm:col-span-2">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Work Photos (up to 4)</p>
