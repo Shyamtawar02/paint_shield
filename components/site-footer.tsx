@@ -159,7 +159,9 @@ export function SiteFooter() {
       </div>
       <div className="hairline">
         <div className="mx-auto max-w-7xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p>© 2026 PAINT SHIELD. All rights reserved.</p>
+          <p className="text-muted-foreground text-sm">
+  © 2026 Paint Shield India. All rights reserved.
+</p>
           <p className="tracking-[0.15em]">
             Crafted with precision · Developed by{" "}
             <span className="text-gold font-medium">Shyam</span>

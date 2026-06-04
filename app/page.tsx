@@ -114,45 +114,51 @@ export default function HomePage() {
       <SiteHeader />
       <HeroSlider />
 
-      {/* ABOUT OUR STUDIO */}
-      <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="grid gap-12 md:gap-16 md:grid-cols-2 items-center">
-          <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe">
-            <Image
-              src={studioBay}
-              alt="Gold Guard Forge detailing studio bay"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-              priority
-            />
-            <div className="absolute bottom-6 right-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 hidden md:block">
-              <p className="text-xs uppercase tracking-[0.2em] text-gold">Clean-Room</p>
-              <p className="font-display text-lg mt-1">22°C · 45% RH</p>
-            </div>
+    {/* ABOUT OUR STUDIO */}
+<section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+  <div className="grid gap-12 md:gap-16 md:grid-cols-2 items-center">
+    <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe">
+      <Image
+        src={studioBay}
+        alt="Gold Guard Forge detailing studio bay"
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className="object-cover"
+        priority
+      />
+      <div className="absolute bottom-6 right-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 hidden md:block">
+        <p className="text-xs uppercase tracking-[0.2em] text-gold">Clean-Room</p>
+        <p className="font-display text-lg mt-1">22°C · 45% RH</p>
+      </div>
+    </div>
+    <div>
+      <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">About our Studio</p>
+      
+      {/* Updated Heading */}
+      <h2 className="font-display text-4xl md:text-5xl leading-tight">
+        Paint Shield India: <br/> 
+        <em className="text-gradient-gold not-italic">Elite automotive perfection.</em>
+      </h2>
+      
+      <div className="my-8 gold-divider" />
+      <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
+        Paint Shield is a premium automotive protection studio committed to preserving the beauty and integrity of your vehicle. Through expert craftsmanship, advanced protection technologies, and meticulous attention to detail, we deliver world-class Paint Protection Film (PPF) and Ceramic Coating solutions designed to keep your vehicle looking its best for years to come.
+      </p>
+      <div className="mt-8 grid grid-cols-3 gap-6">
+        {[
+          { k: "Certified", v: "Master Installers" },
+          { k: "Clean-Room", v: "Filtered Bay" },
+          { k: "International", v: "Standards" },
+        ].map((s, index) => (
+          <div key={`${s.v}-${index}`}>
+            <p className="font-display text-lg text-gradient-gold">{s.k}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">{s.v}</p>
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">About our Studio</p>
-            <h2 className="font-display text-4xl md:text-5xl leading-tight">An elite atelier for <em className="text-gradient-gold not-italic">automotive perfection.</em></h2>
-            <div className="my-8 gold-divider" />
-            <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-           Paint Shield is a premium automotive protection studio committed to preserving the beauty and integrity of your vehicle. Through expert craftsmanship, advanced protection technologies, and meticulous attention to detail, we deliver world-class Paint Protection Film (PPF) and Ceramic Coating solutions designed to keep your vehicle looking its best for years to come.
-            </p>
-            <div className="mt-8 grid grid-cols-3 gap-6">
-              {[
-                { k: "Certified", v: "Master Installers" },
-                { k: "Clean-Room", v: "Filtered Bay" },
-                { k: "International", v: "Standards" },
-              ].map((s, index) => (
-                <div key={`${s.v}-${index}`}>
-                  <p className="font-display text-lg text-gradient-gold">{s.k}</p>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">{s.v}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
 
       <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
 
