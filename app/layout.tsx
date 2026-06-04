@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   title: "Paint Shield India | Elite Detailing",
   description: "Premium Paint Protection Film (PPF), Ceramic Coating, and Automotive Perfection.",
   keywords: ["Paint Shield India", "Paint Protection Film", "PPF India", "Ceramic Coating", "Car Detailing"],
+  openGraph: {
+    title: "Paint Shield India",
+    description: "Premium PPF and Ceramic Coating Studio.",
+    siteName: "Paint Shield India",
+  },
 };
 
 export default function RootLayout({
