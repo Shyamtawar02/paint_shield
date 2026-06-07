@@ -24,8 +24,8 @@ import gallery1 from "@/public/assets/gallery-1.jpg";
 import gallery2 from "@/public/assets/gallery-2.jpg";
 import gallery3 from "@/public/assets/gallery-3.jpg";
 import studioBay from "@/public/assets/studio-bay.jpg";
-import pillarNonYellow from "@/public/assets/pillar-nonyellow.jpg";
-import pillarSelfHeal from "@/public/assets/pillar-selfheal.jpg";
+import pillarNonYellow from "@/public/assets/pillar-nonyellow.jpeg";
+import pillarSelfHeal from "@/public/assets/pillar-selfheal.jpeg";
 import pillarAntiStain from "@/public/assets/pillar-antistain.jpg";
 import pillarUv from "@/public/assets/pillar-uv.jpg";
 import prodPpf from "@/public/assets/prod-ppf.jpg";
@@ -142,7 +142,7 @@ export default function HomePage() {
       
       <div className="my-8 gold-divider" />
       <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-        Paint Shield is a premium automotive protection studio committed to preserving the beauty and integrity of your vehicle. Through expert craftsmanship, advanced protection technologies, and meticulous attention to detail, we deliver world-class Paint Protection Film (PPF) and Ceramic Coating solutions designed to keep your vehicle looking its best for years to come.
+      Paint Shield is India's Trusted Paint Protection Brand, committed to delivering advanced vehicle protection solutions that preserve the appearance, value, and longevity of your vehicle. By combining innovative Paint Protection Film (PPF) technology with uncompromising quality standards, we provide long-lasting protection against everyday road hazards while maintaining a flawless finish.
       </p>
       <div className="mt-8 grid grid-cols-3 gap-6">
         {[
@@ -166,7 +166,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="text-center max-w-2xl mx-auto mb-14">
           <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">Why PAINT SHIELD</p>
-          <h2 className="font-display text-4xl md:text-5xl">Engineered to disappear.</h2>
+          <h2 className="font-display text-4xl md:text-5xl">Choose Paint Shield. Choose Peace of Mind.</h2>
           <p className="mt-4 text-muted-foreground">Four pillars define every film we install. Tap a pillar to see it in action.</p>
         </div>
 
@@ -408,7 +408,7 @@ export default function HomePage() {
 
             <div className="grid grid-cols-3 gap-6">
               {[
-                { k: "3000+", v: "Cars Protected" },
+                { k: "5000+", v: "Cars Protected" },
                 { k: "5 yr to 15 yr", v: " Warranty" },
                 { k: "0", v: "Compromises" },
               ].map((s) => (

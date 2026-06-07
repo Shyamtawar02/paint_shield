@@ -17,14 +17,38 @@ const montserrat = Montserrat({
 
 // Yahan SEO Metadata update kar diya hai
 export const metadata: Metadata = {
-  title: "Paint Shield India | Elite Detailing",
-  description: "Premium Paint Protection Film (PPF), Ceramic Coating, and Automotive Perfection.",
-  keywords: ["Paint Shield India", "Paint Protection Film", "PPF India", "Ceramic Coating", "Car Detailing"],
+  title: "Paint Shield India | India's Trusted Paint Protection Brand",
+  description:
+  "Paint Shield India is India's Trusted Paint Protection Brand offering Premium PPF, Window Films, and Advanced Car Paint Protection Solutions. Get the best PPF installation and long-lasting vehicle protection.",
+ keywords: [
+  "Paint Shield",
+  "Paint Shield India",
+  "Paint Shield PPF",
+  "Best PPF",
+  "Best PPF Company",
+  "Best Paint Protection Film",
+  "Best Car Paint Protection",
+  "Car PPF",
+  "PPF for Cars",
+  "Paint Protection Film",
+  "PPF India",
+  "Premium PPF",
+  "Automotive Paint Protection",
+  "Car Paint Protection",
+  "Ceramic Coating",
+  "Ceramic Coating India",
+  "PPF Installation",
+  "Window Film",
+  "Car Detailing",
+  "Vehicle Protection",
+  "Luxury Car Protection"
+],
   openGraph: {
-    title: "Paint Shield India",
-    description: "Premium PPF and Ceramic Coating Studio.",
-    siteName: "Paint Shield India",
-  },
+  title: "Paint Shield India | India's Trusted Paint Protection Brand",
+  description:
+    "Premium Paint Protection Film (PPF), Best Car Paint Protection Solutions, and Professional PPF Installation Services across India.",
+  siteName: "Paint Shield India",
+},
 };
 
 export default function RootLayout({

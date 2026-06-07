@@ -48,7 +48,7 @@ export function SiteFooter() {
             <h3 className="font-display text-lg tracking-[0.22em] uppercase">Paint<span className="ml-1 text-gold">Shield</span></h3>
           </div>
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-            Premium Paint Protection Film, Ceramic Coating & Window Tint solutions engineered to preserve your vehicle's showroom finish.
+            Premium Paint Protection Film & Window Tint solutions engineered to preserve your vehicle's showroom finish.
           </p>
           <div className="mt-6 flex items-center gap-3">
             {socialIcons.map((item, i) => (

@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { 
-  ShieldCheck, Download, Phone, Mail, Calendar, Car, KeyRound, 
-  SprayCan, Sun, FlaskConical, CheckCircle2 
+import {
+  ShieldCheck, Download, Phone, Mail, Calendar, Car, KeyRound,
+  SprayCan, Sun, FlaskConical, CheckCircle2
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { type Customer } from "@/lib/store";
+import Image from "next/image";
+import logo from "@/public/assets/paint-shield-logo.jpeg";
+
 
 // Global style classes
 const btnGold = "inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background py-3 text-sm font-medium hover:bg-gold hover:text-ink transition-colors";
@@ -136,9 +139,9 @@ function LoginCard({ onLogin }: { onLogin: (c: Customer) => void }) {
             />
           </label>
           {err && <p className="text-sm text-destructive font-medium">{err}</p>}
-          <button 
-            type="submit" 
-            disabled={loading} 
+          <button
+            type="submit"
+            disabled={loading}
             className={`${btnGold} w-full disabled:opacity-50`}
           >
             {loading ? "Verifying..." : "Access My Warranty"}
@@ -152,11 +155,11 @@ function LoginCard({ onLogin }: { onLogin: (c: Customer) => void }) {
 function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: () => void }) {
   const start = new Date(customer.serviceDate || new Date());
   const warrantyNum = parseInt(String(customer.warrantyYears || "5").replace(/\D/g, "")) || 5;
-  
+
   const end = new Date(start);
   end.setFullYear(end.getFullYear() + warrantyNum);
   const now = new Date();
-  
+
   const totalMs = end.getTime() - start.getTime();
   const elapsedMs = Math.max(0, Math.min(totalMs, now.getTime() - start.getTime()));
   const remainingPct = Math.max(0, Math.min(100, ((totalMs - elapsedMs) / totalMs) * 100));
@@ -164,7 +167,7 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
 
   const serviceYear = start.getFullYear() || new Date().getFullYear();
   const serialSeed = (customer.id || customer._id || customer.vehicleNo || "0001").replace(/\D/g, "").slice(-4).padStart(4, "0") || "0001";
-  
+
   // Certificate number Prefix changed to PS (Paint Shield)
   const certificateNo = `PS-${serviceYear}-${serialSeed}`;
   const serviceDateFmt = start.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
@@ -202,26 +205,41 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
   .term { font-size: 10.5px; line-height: 1.5; }
   .term .num { font-family:'Playfair Display', Georgia, serif; font-size: 16px; color:#b8860b; }
   .term b { display:block; margin: 2px 0 4px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-  .footer { display:flex; justify-content:space-between; align-items:flex-end; margin-top: 22px; padding-top: 14px; border-top: 1px solid #d4af37; font-size: 10px; color:#555; }
+ .footer {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid #d4af37;
+  font-size:10px;
+  color:#555;
+}
   .sign { text-align:right; }
   .sign .line { width: 220px; border-bottom: 1px solid #b8860b; height: 28px; margin-left:auto; }
   .sign .role { margin-top: 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color:#1a1a1a; }
-  .seal { position:absolute; bottom: 26mm; left: 18mm; width: 90px; height: 90px; border:2px solid #b8860b; border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9px; letter-spacing:2px; color:#b8860b; text-transform:uppercase; opacity:0.85; transform: rotate(-8deg); font-family:'Playfair Display', Georgia, serif; line-height:1.2; }
   @media print { body { background:#fff; } .noprint { display:none; } }
 </style></head><body>
 <div class="sheet"><div class="frame">
   <div class="header">
-    <div>
-      <p class="brand-eyebrow">Premium Detailing Studio</p>
-      <h1 class="brand-name">PAINT SHIELD</h1>
-      <p class="title">Digital Warranty Certificate</p>
-    </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+  <img
+    src="/assets/paint-shield-logo.jpeg"
+    alt="Paint Shield"
+    style="height:60px;width:auto;"
+  />
+  <div>
+   <p class="brand-eyebrow">Choose Paint Shield. Choose Peace of Mind.</p>
+    <h1 class="brand-name">PAINT SHIELD</h1>
+    <p class="title">Digital Warranty Certificate</p>
+  </div>
+</div>
     <div class="studio">
-      <b>Studio Contact</b>
-      Paint Shield Studio<br/>
-      Contact: +91 7400829575<br/>
-      Email: shyamtawar4@gmail.com<br/>
-      Services: Premium PPF, Window Tint &amp; Ceramic Coatings
+      <b>Contact</b>
+      Paint Shield India<br/>
+      Contact: +91 6367629112<br/>
+      Email: studio@paintshield.com<br/>
+      Services: Premium PPF, Window Tint
     </div>
   </div>
 
@@ -236,7 +254,7 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
     <tr><td class="k">Customer Name</td><td class="v">${customer.customerName}</td>
         <td class="k">Vehicle Model</td><td class="v">${customer.vehicleModel || "—"}</td></tr>
     <tr><td class="k">Vehicle No.</td><td class="v">${customer.vehicleNo}</td>
-        <td class="k">KM at Service</td><td class="v">${customer.kmDriven || "—"}</td></tr>
+        <td class="k">Studio</td><td class="v">${customer.kmDriven || "—"}</td></tr>
     <tr><td class="k">Contact</td><td class="v">${customer.contactNo}</td>
         <td class="k">Email</td><td class="v">${customer.email || "—"}</td></tr>
     <tr><td class="k">Service Type</td><td class="v">${customer.serviceType}</td>
@@ -260,10 +278,51 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
     <p style="margin:10px 0 0;font-size:9.5px;color:#777;text-align:center;letter-spacing:1px;text-transform:uppercase;">Failure to follow these guidelines may void warranty coverage.</p>
   </div>
 
-  <div class="seal">Paint<br/>Shield<br/>Verified</div>
+<div class="terms" style="margin-top:12px;">
+  <h3>Warranty Coverage & Terms</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px;">
+
+    <div style="border-right:1px solid #e6c764;padding-right:16px;">
+      <p style="margin:0 0 10px;font-size:10px;">
+        ✓ The warranty is applicable if the Paint Protection Film (PPF) peels off due to a manufacturing defect.
+      </p>
+
+      <p style="margin:0 0 10px;font-size:10px;">
+        ✓ The warranty covers excessive bubbling caused by material failure.
+      </p>
+
+      <p style="margin:0;font-size:10px;">
+        ✓ The warranty covers yellowing exceeding 10% of the film's original appearance under normal usage conditions.
+      </p>
+    </div>
+
+    <div style="padding-left:6px;">
+      <p style="margin:0 0 10px;font-size:10px;">
+        ✕ Damage caused by accidents, collisions, or external impacts is not covered.
+      </p>
+
+      <p style="margin:0 0 10px;font-size:10px;">
+        ✕ Edge lifting or peeling resulting from improper use of high-pressure washing is not covered.
+      </p>
+
+      <p style="margin:0;font-size:10px;">
+        ✕ Damage caused by improper maintenance, neglect, or failure to follow recommended care instructions is not covered.
+      </p>
+    </div>
+
+  </div>
+
+  <div style="margin-top:12px;padding-top:10px;border-top:1px solid #e6c764;font-size:10px;line-height:1.6;">
+    <div>✓ Warranty coverage is provided by the PPF manufacturer.</div>
+    <div>✓ Replacement film is covered as per manufacturer policy.</div>
+    <div>✓ Installation or reinstallation charges may be chargeable through the authorized detailer.</div>
+    <div>✓ All warranty claims receive an initial response within 24 working hours.</div>
+  </div>
+</div>
 
   <div class="footer">
-    <div>This certificate is digitally issued and verifiable at the Paint Shield Warranty Portal.<br/>Certificate ID: ${certificateNo}</div>
+    <div>This certificate is digitally issued and verifiable at the Paint Shield India Warranty Portal.<br/>Certificate ID: ${certificateNo}</div>
     <div class="sign">
       <div class="line"></div>
       <div class="role">Authorized Signatory — Paint Shield</div>
@@ -302,20 +361,36 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
       {/* Warranty card */}
       <div className="relative rounded-3xl border-2 border-gold bg-card p-8 md:p-10 shadow-luxe overflow-hidden">
         <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-gradient-gold opacity-20 blur-3xl pointer-events-none" />
-        
+
         <div className="relative flex flex-wrap items-start justify-between gap-6 border-b border-gold/40 pb-6 mb-6">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.4em] text-gold">Premium Detailing Studio</p>
-            <h2 className="font-display text-3xl md:text-4xl mt-2 tracking-wide">PAINT SHIELD</h2>
-            <p className="mt-2 font-display text-base uppercase tracking-[0.25em] text-foreground/90">
-              Digital Warranty Certificate
-            </p>
+          <div className="flex items-center gap-4">
+            <Image
+              src={logo}
+              alt="Paint Shield Logo"
+              width={70}
+              height={70}
+              className="object-contain"
+            />
+
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-gold">
+                Choose Paint Shield. Choose Peace of Mind.
+              </p>
+
+              <h2 className="font-display text-3xl md:text-4xl mt-2 tracking-wide">
+                PAINT SHIELD
+              </h2>
+
+              <p className="mt-2 font-display text-base uppercase tracking-[0.25em] text-foreground/90">
+                Digital Warranty Certificate
+              </p>
+            </div>
           </div>
           <div className="md:text-right text-sm leading-relaxed shrink-0">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-1">Studio Contact</p>
-            <p className="font-medium">Paint Shield Studio</p>
-            <p className="text-muted-foreground text-xs">Contact: +91 7400829575</p>
-            <p className="text-muted-foreground text-xs">Email: shyamtawar4@gmail.com</p>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-1">Contact</p>
+            <p className="font-medium">Paint Shield India</p>
+            <p className="text-muted-foreground text-xs">Contact: +91 6367629112</p>
+            <p className="text-muted-foreground text-xs">Email: studio@paintshield.com</p>
           </div>
         </div>
 
@@ -377,6 +452,38 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
           </p>
         </div>
 
+        <div className="mt-6 rounded-xl border border-gold/30 bg-gold/5 p-5">
+          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-gold mb-4">
+            Warranty Coverage & Terms
+          </h4>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="font-medium text-sm mb-2">✓ Covered</p>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li>• Manufacturing defect related peeling.</li>
+                <li>• Excessive bubbling caused by material failure.</li>
+                <li>• Yellowing exceeding 10% under normal usage.</li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="font-medium text-sm mb-2">✕ Not Covered</p>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li>• Accidental or collision damage.</li>
+                <li>• Pressure washing directly on film edges.</li>
+                <li>• Improper maintenance or neglect.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-4 border-t border-gold/20 pt-3">
+            <p className="text-xs text-muted-foreground">
+              Warranty is provided by the PPF manufacturer. Replacement film may be covered as per manufacturer policy. Installation charges may apply through the authorized detailer. Claims receive an initial response within 24 working hours.
+            </p>
+          </div>
+        </div>
+
         {/* Sign-off */}
         <div className="mt-8 flex flex-wrap items-end justify-between gap-6 border-t border-gold/40 pt-5 text-xs text-muted-foreground">
           <p className="max-w-sm">This certificate is digitally issued and verifiable at the Paint Shield Warranty Portal. Certificate ID: <span className="text-gold font-semibold">{certificateNo}</span></p>
@@ -404,10 +511,10 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
             return (
               <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border bg-secondary/40 relative">
                 {photo ? (
-                  <img 
-                    src={photo} 
-                    alt={`Work ${i + 1}`} 
-                    className="h-full w-full object-cover hover:scale-105 transition-transform duration-500" 
+                  <img
+                    src={photo}
+                    alt={`Work ${i + 1}`}
+                    className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
@@ -456,7 +563,7 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
   );
 }
 
-{/* Cleaned & Updated Detail Component to match Lovable UI */}
+{/* Cleaned & Updated Detail Component to match Lovable UI */ }
 function Detail({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
   return (
     <div className="flex items-center gap-4 py-1.5">
