@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo, useEffect } from "react";
-import Image from "next/image"; 
+import Image from "next/image";
 import {
   ChevronDown, Sparkles, ShieldCheck, Award, Sun, Droplets, Wand2, Ban, X, Layers, Thermometer, Gauge, Clock,
   SprayCan, FlaskConical, MapPin, Phone,
@@ -55,7 +55,7 @@ const careTips = [
 
 export default function HomePage() {
   const { state, update } = useStore();
-  
+
   const [activeCategoryId, setActiveCategoryId] = useState<string>("");
   const [active, setActive] = useState<{ product: Product; variant: ProductVariant } | null>(null);
   const [activePillar, setActivePillar] = useState(0);
@@ -65,12 +65,12 @@ export default function HomePage() {
     const loadFreshDatabaseData = async () => {
       try {
         // page.tsx ki line 66 ko aise badal kar test karo:
-          const response = await fetch("/api/admin", { 
+        const response = await fetch("/api/admin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "get_public_init_data" }),
         });
-        
+
         const resData = await response.json();
 
         if (resData.success && resData.data) {
@@ -114,51 +114,50 @@ export default function HomePage() {
       <SiteHeader />
       <HeroSlider />
 
-    {/* ABOUT OUR STUDIO */}
-<section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-  <div className="grid gap-12 md:gap-16 md:grid-cols-2 items-center">
-    <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe">
-      <Image
-        src={studioBay}
-        alt="Gold Guard Forge detailing studio bay"
-        fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        className="object-cover"
-        priority
-      />
-      <div className="absolute bottom-6 right-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 hidden md:block">
-        <p className="text-xs uppercase tracking-[0.2em] text-gold">Clean-Room</p>
-        <p className="font-display text-lg mt-1">22°C · 45% RH</p>
-      </div>
-    </div>
-    <div>
-      <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">About our Studio</p>
-      
-      {/* Updated Heading */}
-      <h2 className="font-display text-4xl md:text-5xl leading-tight">
-        Paint Shield India: <br/> 
-        <em className="text-gradient-gold not-italic">Elite automotive perfection.</em>
-      </h2>
-      
-      <div className="my-8 gold-divider" />
-      <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-      Paint Shield is India's Trusted Paint Protection Brand, committed to delivering advanced vehicle protection solutions that preserve the appearance, value, and longevity of your vehicle. By combining innovative Paint Protection Film (PPF) technology with uncompromising quality standards, we provide long-lasting protection against everyday road hazards while maintaining a flawless finish.
-      </p>
-      <div className="mt-8 grid grid-cols-3 gap-6">
-        {[
-          { k: "Certified", v: "Master Installers" },
-          { k: "Clean-Room", v: "Filtered Bay" },
-          { k: "International", v: "Standards" },
-        ].map((s, index) => (
-          <div key={`${s.v}-${index}`}>
-            <p className="font-display text-lg text-gradient-gold">{s.k}</p>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">{s.v}</p>
+      {/* ABOUT OUR STUDIO */}
+      <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="grid gap-12 md:gap-16 md:grid-cols-2 items-center">
+          <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe">
+            <Image
+              src={studioBay}
+             alt="Professional PPF installation and car detailing studio bay at Paint Shield India"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+              priority
+            />
+            <div className="absolute bottom-6 right-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 hidden md:block">
+              <p className="text-xs uppercase tracking-[0.2em] text-gold">Clean-Room</p>
+              <p className="font-display text-lg mt-1">22°C · 45% RH</p>
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
-  </div>
-</section>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">About our Studio</p>
+
+            {/* Updated Heading */}
+            <h2 className="font-display text-4xl md:text-5xl leading-tight">
+              Paint Shield India: <br />
+              <em className="text-gradient-gold not-italic">Elite automotive perfection.</em>
+            </h2>
+
+            <div className="my-8 gold-divider" />
+            <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
+              Paint Shield is India's Trusted Paint Protection Brand, committed to delivering advanced car paint protection solutions and premium Paint Protection Film (PPF) technology that preserve the appearance, value, and longevity of your vehicle. From professional PPF installation to high-end car detailing, we provide long-lasting protection against everyday road hazards while maintaining a flawless finish. As a leader in automotive paint protection, we ensure your car gets the luxury car protection it deserves.      </p>
+            <div className="mt-8 grid grid-cols-3 gap-6">
+              {[
+                { k: "Certified", v: "Master Installers" },
+                { k: "Clean-Room", v: "Filtered Bay" },
+                { k: "International", v: "Standards" },
+              ].map((s, index) => (
+                <div key={`${s.v}-${index}`}>
+                  <p className="font-display text-lg text-gradient-gold">{s.k}</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">{s.v}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
 
@@ -171,19 +170,18 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-stretch">
-          
+
           {/* DESKTOP IMAGE VIEW: Only visible on lg (Desktop) screens */}
           <div className="hidden lg:block relative rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40 min-h-[450px]">
             {benefits.map((b, i) => (
               <Image
                 key={b.title}
                 src={b.image}
-                alt={b.title}
+                alt={`${b.title} - Paint Shield India Premium PPF and Car Detailing`}
                 fill
                 sizes="50vw"
-                className={`object-cover transition-opacity duration-700 ease-out ${
-                  activePillar === i ? "opacity-100" : "opacity-0"
-                }`}
+                className={`object-cover transition-opacity duration-700 ease-out ${activePillar === i ? "opacity-100" : "opacity-0"
+                  }`}
               />
             ))}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
@@ -201,9 +199,8 @@ export default function HomePage() {
               return (
                 <div
                   key={title}
-                  className={`flex flex-col transition-all ${
-                    isActive ? "bg-secondary/60" : "bg-card"
-                  }`}
+                  className={`flex flex-col transition-all ${isActive ? "bg-secondary/60" : "bg-card"
+                    }`}
                 >
                   {/* Main Accordion/Tab Trigger */}
                   <button
@@ -212,9 +209,8 @@ export default function HomePage() {
                     onMouseEnter={() => setActivePillar(i)}
                     className="text-left p-6 sm:p-7 flex flex-col items-start gap-3 w-full outline-none"
                   >
-                    <div className={`h-11 w-11 rounded-full grid place-items-center transition-colors ${
-                      isActive ? "bg-gold text-foreground shadow-gold" : "border border-gold/40 text-gold"
-                    }`}>
+                    <div className={`h-11 w-11 rounded-full grid place-items-center transition-colors ${isActive ? "bg-gold text-foreground shadow-gold" : "border border-gold/40 text-gold"
+                      }`}>
                       <Icon className="h-4 w-4" />
                     </div>
                     <h3 className="font-display text-lg">{title}</h3>
@@ -228,7 +224,7 @@ export default function HomePage() {
                       <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-border/60 shadow-md">
                         <Image
                           src={image}
-                          alt={title}
+                          alt={`${title} - Best Car Paint Protection & PPF by Paint Shield India`}
                           fill
                           sizes="(max-width: 1024px) 100vw"
                           className="object-cover"
@@ -266,11 +262,10 @@ export default function HomePage() {
                   key={p.id}
                   type="button"
                   onClick={() => setActiveCategoryId(p.id)}
-                  className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] border transition-all ${
-                    isActive
-                      ? "bg-gradient-gold text-background border-transparent shadow-gold"
-                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-gold/60"
-                  }`}
+                  className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] border transition-all ${isActive
+                    ? "bg-gradient-gold text-background border-transparent shadow-gold"
+                    : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-gold/60"
+                    }`}
                 >
                   {p.name}
                 </button>
@@ -281,12 +276,12 @@ export default function HomePage() {
           {currentCategory && (
             <div key={currentCategory.id} className="animate-fade-in">
               <div className="grid gap-10 lg:grid-cols-[5fr_7fr] items-start mb-12">
-                
+
                 {/* DYNAMIC IMAGE BLOCK */}
                 <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border shadow-luxe bg-secondary/40">
                   <Image
                     src={currentCategory.image || productImages[currentCategory.id] || prodPpf}
-                    alt={currentCategory.name}
+                    alt={`${currentCategory.name} - Premium Automotive Vehicle Protection by Paint Shield India`}
                     fill
                     sizes="(max-width: 1024px) 100vw, 35vw"
                     className="object-cover"
@@ -390,8 +385,10 @@ export default function HomePage() {
       <section className="bg-secondary/30 border-y border-border py-24 md:py-32">
         <div className="mx-auto max-w-7xl px-6 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe order-2 md:order-1">
-            <Image src={gallery1} alt="Studio bay" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-            {/* <div className="absolute bottom-6 left-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 max-w-[200px] hidden md:block">
+                      <Image src={gallery1} 
+                     alt="Professional car detailing and paint protection at Paint Shield India" 
+                      fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+  {/* <div className="absolute bottom-6 left-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 max-w-[200px] hidden md:block">
               <p className="text-xs uppercase tracking-[0.2em] text-gold">Certified</p>
               <p className="font-display text-lg mt-1">XPEL · STEK · Suntek</p>
             </div> */}
@@ -401,8 +398,7 @@ export default function HomePage() {
             <h2 className="font-display text-4xl md:text-5xl leading-tight">Measured in <em className="text-gradient-gold not-italic">microns,</em> proven in years.</h2>
             <p className="mt-6 text-muted-foreground leading-relaxed">{state?.studio?.about}</p>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-             At Paint Shield, every installation is performed with uncompromising attention to detail. Our specialists follow a meticulous preparation and application process to ensure seamless protection, exceptional finish, and lasting performance.
-            </p>
+              At Paint Shield, our professional PPF installation is performed with uncompromising attention to detail. As experts in automotive paint protection, we follow a meticulous preparation and application process to provide the best car paint protection, ensuring a seamless finish and long-lasting performance.            </p>
 
             <div className="my-8 gold-divider" />
 
@@ -421,7 +417,7 @@ export default function HomePage() {
 
             <div className="mt-8 grid sm:grid-cols-2 gap-4 text-sm">
               <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
-            
+
                 <Mail className="h-4 w-4 text-gold mt-0.5 shrink-0" />
                 <div><p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Email</p> <p>{state?.studio?.email}</p></div>
               </div>
@@ -476,11 +472,10 @@ const VariantCard = memo(function VariantCard({
 }: { variant: ProductVariant; featured?: boolean; onOpen: () => void }) {
   return (
     <article
-      className={`relative flex flex-col rounded-2xl border bg-card p-8 transition-all hover:shadow-luxe hover:-translate-y-1 ${
-        featured 
-          ? "border-gold shadow-[0_0_20px_rgba(218,165,32,0.15)] ring-1 ring-gold/20" 
-          : "border-border shadow-soft"
-      }`}
+      className={`relative flex flex-col rounded-2xl border bg-card p-8 transition-all hover:shadow-luxe hover:-translate-y-1 ${featured
+        ? "border-gold shadow-[0_0_20px_rgba(218,165,32,0.15)] ring-1 ring-gold/20"
+        : "border-border shadow-soft"
+        }`}
     >
       {/* MOST POPULAR BADGE */}
       {featured && (
@@ -501,12 +496,12 @@ const VariantCard = memo(function VariantCard({
       {/* THICKNESS & WARRANTY */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div>
-           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Thickness</p>
-           <p className="font-display text-2xl mt-1">{variant.microns}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Thickness</p>
+          <p className="font-display text-2xl mt-1">{variant.microns}</p>
         </div>
         <div>
-           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Warranty</p>
-           <p className="font-display text-2xl mt-1">{variant.warranty}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Warranty</p>
+          <p className="font-display text-2xl mt-1">{variant.warranty}</p>
         </div>
       </div>
 
@@ -562,8 +557,8 @@ function SpecSheet({
   const previewImage = product.image || productImages[product.id] || prodPpf;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center p-4 overflow-y-auto animate-fade-in" 
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center p-4 overflow-y-auto animate-fade-in"
       onClick={onClose}
     >
       <div
@@ -572,15 +567,15 @@ function SpecSheet({
       >
         <div className="grid md:grid-cols-[5fr_7fr] w-full overflow-hidden">
           <div className="relative bg-secondary/40 hidden md:block md:h-full min-h-[450px]">
-            <Image 
-              src={previewImage} 
-              alt={variant.typeName || product.name} 
-              fill 
+            <Image
+              src={previewImage}
+             alt={`${variant.typeName || product.name} - Paint Shield India PPF and Protection`}
+              fill
               sizes="35vw"
-              className="object-cover" 
+              className="object-cover"
               // 🔥 FIX 2: Next.js image pipeline block na kare dynamic URL ya base64 ko, isliye unoptimized flag
               unoptimized={
-                typeof product.image === 'string' && 
+                typeof product.image === 'string' &&
                 (product.image.startsWith('http') || product.image.startsWith('data:'))
               }
               priority={true} // Taaki modal khulte hi blank box na dikhe, instant image render ho
@@ -601,16 +596,16 @@ function SpecSheet({
                   {variant.detailedInfo || variant.details}
                 </p>
               </div>
-              <button 
-                type="button" 
-                onClick={onClose} 
-                aria-label="Close" 
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
                 className="h-9 w-9 grid place-items-center rounded-full hover:bg-secondary shrink-0 border border-border"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            
+
             <div className="p-6 md:p-8">
               <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-5 font-semibold">
                 Technical Specification
@@ -643,7 +638,9 @@ function GalleryPhoto({ src, ratio, caption }: { src: NextStaticAsset; ratio: st
   return (
     <figure className="break-inside-avoid mb-6 rounded-xl overflow-hidden border border-border bg-card shadow-soft group">
       <div className={`overflow-hidden relative ${ratio}`}>
-        <Image src={src} alt={caption} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+        <Image src={src}
+         alt={`${caption} | Luxury Car Protection and PPF Installation by Paint Shield India`}
+          fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
       </div>
       <figcaption className="px-4 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-between">
         <span>{caption}</span>

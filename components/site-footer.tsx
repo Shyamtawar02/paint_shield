@@ -48,7 +48,7 @@ export function SiteFooter() {
             <h3 className="font-display text-lg tracking-[0.22em] uppercase">Paint<span className="ml-1 text-gold">Shield</span></h3>
           </div>
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-            Premium Paint Protection Film & Window Tint solutions engineered to preserve your vehicle's showroom finish.
+          Paint Shield India is your trusted brand for <strong>Premium PPF</strong>, <strong>Car Detailing</strong>, and <strong>Best Car Paint Protection</strong> solutions. We ensure your vehicle maintains its showroom shine.
           </p>
           <div className="mt-6 flex items-center gap-3">
             {socialIcons.map((item, i) => (
@@ -131,28 +131,28 @@ export function SiteFooter() {
         </div> */}
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-gold">
-            Warranty & Support
+            Why Choose Us
           </p>
 
           <div className="mt-4 space-y-3 text-sm text-muted-foreground">
             <div className="flex items-start gap-2">
               <span className="text-gold">✓</span>
-              <span>Up to 15-Year Warranty Coverage</span>
+              <span>Top-Rated <strong>PPF Installation</strong></span>
             </div>
 
             <div className="flex items-start gap-2">
               <span className="text-gold">✓</span>
-              <span>Professional Installation Guarantee</span>
+              <span>Advanced <strong>Ceramic Coating</strong> Experts</span>
             </div>
 
             <div className="flex items-start gap-2">
               <span className="text-gold">✓</span>
-              <span>Self-Healing & UV Protection Technology</span>
+             <span><strong>Luxury Car Protection</strong> Specialist</span>
             </div>
 
             <div className="flex items-start gap-2">
               <span className="text-gold">✓</span>
-              <span>Dedicated Aftercare & Customer Support</span>
+            <span><strong>Best PPF Company</strong> in India</span>
             </div>
           </div>
         </div>
