@@ -15,6 +15,18 @@ const navLinks = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+
+    setShowAdmin(localStorage.getItem("isAdmin") === "true");
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -24,17 +36,21 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-50 glass border-b border-border/60">
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-         <Link href="/" className="flex items-center gap-3 group">
-  {/* logo ko logo.src se replace kiya */}
-  <img src={logo.src} alt="Paint Shield" className="h-10 w-10 object-contain" />
-  <span className="font-display text-base tracking-[0.22em] uppercase">
-    Paint<span className="ml-1 text-gold">Shield</span>
-  </span>
-</Link>
+          <Link href="/" className="flex items-center gap-3 group">
+            {/* logo ko logo.src se replace kiya */}
+            <img src={logo.src} alt="Paint Shield" className="h-10 w-10 object-contain" />
+            <span className="font-display text-base tracking-[0.22em] uppercase">
+              Paint<span className="ml-1 text-gold">Shield</span>
+            </span>
+          </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="/#tiers" className="hover:text-foreground transition">PPF</a>
             <a href="/#gallery" className="hover:text-foreground transition">Studio</a>
-            <Link href="/admin" className="hover:text-foreground transition">Admin</Link>
+            {showAdmin && (
+              <Link href="/admin" className="hover:text-foreground transition">
+                Admin
+              </Link>
+            )}
           </nav>
           <div className="flex items-center gap-2">
             <Link
@@ -56,9 +72,8 @@ export function SiteHeader() {
 
       {/* Mobile drawer */}
       <div
-        className={`md:hidden fixed inset-0 z-[60] transition-opacity duration-300 ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`md:hidden fixed inset-0 z-[60] transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       >
         <button
           aria-label="Close menu"
@@ -66,9 +81,8 @@ export function SiteHeader() {
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         />
         <aside
-          className={`absolute top-0 right-0 h-full w-[85%] max-w-sm bg-card border-l border-border shadow-luxe flex flex-col transition-transform duration-300 ${
-            open ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute top-0 right-0 h-full w-[85%] max-w-sm bg-card border-l border-border shadow-luxe flex flex-col transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="flex items-center justify-between px-6 h-16 border-b border-border">
             <span className="font-display text-base tracking-[0.22em] uppercase">Paint<span className="ml-1 text-gold">Shield</span></span>
@@ -91,13 +105,15 @@ export function SiteHeader() {
                 {l.label}
               </a>
             ))}
-            <Link
-              href="/admin"
-              onClick={() => setOpen(false)}
-              className="font-display text-2xl py-4 border-b border-border/60 hover:text-gold transition-colors"
-            >
-              Admin
-            </Link>
+            {showAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="font-display text-2xl py-4 border-b border-border/60 hover:text-gold transition-colors"
+              >
+                Admin
+              </Link>
+            )}
           </nav>
           <div className="p-6 border-t border-border">
             <Link
