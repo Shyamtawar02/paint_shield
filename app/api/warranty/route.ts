@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const { phone, vehicleNo } = body;
 
     if (!phone || !vehicleNo) {
-      return NextResponse.json({ error: "Phone number aur Vehicle number dono zaroori hain." }, { status: 400 });
+      return NextResponse.json({ error: "Phone number and vehicle number are required." }, { status: 400 });
     }
 
     // Aapke lib/db.ts ke connection ko call kiya
@@ -24,15 +24,14 @@ export async function POST(request: Request) {
     });
 
     if (!customer) {
-      return NextResponse.json({ error: "Is vehicle number ka koi record nahi mila." }, { status: 404 });
+      return NextResponse.json({ error: "No record found for this vehicle number." }, { status: 404 });
     }
 
-    // Fallback logic taaki contact field agar undefined ho to crash na kare
     const rawContact = customer.contact || customer.contactNo || "";
     const dbPhoneClean = rawContact.replace(/\D/g, "");
     
     if (dbPhoneClean !== cleanPhone) {
-      return NextResponse.json({ error: "Details match nahi ho rahi hain. Mobile number check karein." }, { status: 401 });
+      return NextResponse.json({ error: "Details do not match. Please verify your mobile number." }, { status: 401 });
     }
 
     return NextResponse.json(customer);
