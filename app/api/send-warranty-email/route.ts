@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { getWarrantyCertificateHtml } from "@/lib/warrantyCertificate";
 
 export const runtime = "nodejs";
@@ -66,10 +67,11 @@ export async function POST(req: Request) {
     });
 
     // Start Puppeteer
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+   browser = await puppeteer.launch({
+  args: chromium.args,
+  executablePath: await chromium.executablePath(),
+  headless: true,
+});
 
     const page = await browser.newPage();
 
