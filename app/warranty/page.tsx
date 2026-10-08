@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import AccidentalWarrantyCertificate from "./AccidentalWarrantyCertificate";
 import { type Customer } from "@/lib/store";
 import Image from "next/image";
 import logo from "@/public/assets/paint-shield-logo.jpeg";
@@ -499,6 +500,20 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
         >
           <Download className="h-4 w-4" /> Download / Print A4 Certificate
         </button>
+      </div>
+
+            {/* Accidental Warranty Certificate */}
+      <div className="mt-12">
+        <AccidentalWarrantyCertificate
+          data={{
+            customerName: customer.customerName,
+            vehicle: customer.vehicleModel,
+            registrationNo: customer.vehicleNo,
+            vin: (customer as any).vin || (customer as any).chassisNo || "",
+            installationDate: serviceDateFmt,
+            certificateNo: `PS-AW-${serviceYear}-${serialSeed}`,
+          }}
+        />
       </div>
 
       {/* Work Gallery */}

@@ -66,23 +66,411 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, data: formattedCustomers });
     }
 
+    // if (action === "create_customer") {
+    //   await dbConnect();
+    //   const db = mongoose.connection.useDb("paintshield");
+
+    //   if (!customerData || !customerData.customerName || !customerData.vehicleNo) {
+    //     return NextResponse.json({ success: false, error: "Missing required fields." }, { status: 400 });
+    //   }
+
+    //   const finalCustomerRecord = {
+    //     ...customerData,
+    //     createdAt: new Date(),
+    //     updatedAt: new Date()
+    //   };
+
+    //   const result = await db.collection("customers").insertOne(finalCustomerRecord);
+    //   return NextResponse.json({ success: true, message: "Customer created.", id: result.insertedId });
+    // }
+
+   
+// if (action === "create_customer") {
+//   await dbConnect();
+
+//   const db = mongoose.connection.useDb("paintshield");
+
+//   if (
+//     !customerData ||
+//     !customerData.customerName ||
+//     !customerData.vehicleNo
+//   ) {
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         error: "Missing required fields.",
+//       },
+//       { status: 400 }
+//     );
+//   }
+
+//   // 1. First save the customer in MongoDB
+//   const finalCustomerRecord = {
+//     ...customerData,
+//     createdAt: new Date(),
+//     updatedAt: new Date(),
+//   };
+
+//   const result = await db
+//     .collection("customers")
+//     .insertOne(finalCustomerRecord);
+
+//   // 2. Automatically send warranty PDF by email
+//   let emailSent = false;
+//   let emailMessage = "";
+
+//   if (customerData.email) {
+//     try {
+//       const startDate = new Date(
+//         customerData.serviceDate || new Date()
+//       );
+
+//       const warrantyNum =
+//         parseInt(
+//           String(customerData.warrantyYears || "5").replace(/\D/g, ""),
+//           10
+//         ) || 5;
+
+//       const endDate = new Date(startDate);
+//       endDate.setFullYear(
+//         endDate.getFullYear() + warrantyNum
+//       );
+
+//       const now = new Date();
+
+//       const totalMs =
+//         endDate.getTime() - startDate.getTime();
+
+//       const elapsedMs = Math.max(
+//         0,
+//         Math.min(
+//           totalMs,
+//           now.getTime() - startDate.getTime()
+//         )
+//       );
+
+//       const yearsLeft = Math.max(
+//         0,
+//         (totalMs - elapsedMs) /
+//           (1000 * 60 * 60 * 24 * 365)
+//       ).toFixed(1);
+
+//       const formatDate = (date: Date) =>
+//         date.toLocaleDateString("en-IN", {
+//           day: "numeric",
+//           month: "long",
+//           year: "numeric",
+//         });
+
+//       const serviceYear =
+//         startDate.getFullYear() || now.getFullYear();
+
+//       const serialSeed = parseInt(
+//         result.insertedId.toString().slice(-6),
+//         16
+//       )
+//         .toString()
+//         .slice(-4)
+//         .padStart(4, "0");
+
+//       const certificateNo =
+//         `PS-${serviceYear}-${serialSeed}`;
+
+//       const emailResponse = await fetch(
+//   new URL("/api/send-warranty-email", request.url),
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             certificateNo,
+//             issuedFmt: formatDate(now),
+//             customerName: customerData.customerName,
+//             vehicleModel: customerData.vehicleModel || "",
+//             vehicleNo: customerData.vehicleNo,
+//             studio: customerData.kmDriven || "",
+//             contactNo: customerData.contactNo || "",
+//             email: customerData.email,
+//             serviceType: customerData.serviceType || "",
+//             serviceDateFmt: formatDate(startDate),
+//             warrantyNum,
+//             endDateFmt: formatDate(endDate),
+//             yearsLeft,
+//           }),
+//         }
+//       );
+
+//       const emailResult = await emailResponse.json();
+
+//       if (emailResponse.ok && emailResult.success) {
+//         emailSent = true;
+//         emailMessage = "Warranty email sent successfully.";
+//       } else {
+//         emailMessage =
+//           emailResult.message ||
+//           "Customer saved, but warranty email failed.";
+//       }
+//     } catch (emailError) {
+//       console.error(
+//         "CUSTOMER SAVED, WARRANTY EMAIL FAILED:",
+//         emailError
+//       );
+
+//       emailMessage =
+//         "Customer saved, but warranty email could not be sent.";
+//     }
+//   } else {
+//     emailMessage =
+//       "Customer saved, but no email address was provided.";
+//   }
+
+//   // 3. Always return customer creation success if DB save succeeded
+//   return NextResponse.json({
+//     success: true,
+//     message: "Customer created.",
+//     id: result.insertedId,
+//     emailSent,
+//     emailMessage,
+//   });
+// }
+
     if (action === "create_customer") {
-      await dbConnect();
-      const db = mongoose.connection.useDb("paintshield");
+  await dbConnect();
 
-      if (!customerData || !customerData.customerName || !customerData.vehicleNo) {
-        return NextResponse.json({ success: false, error: "Missing required fields." }, { status: 400 });
-      }
+  const db = mongoose.connection.useDb("paintshield");
 
-      const finalCustomerRecord = {
-        ...customerData,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+  if (
+    !customerData ||
+    !customerData.customerName ||
+    !customerData.vehicleNo
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Missing required fields.",
+      },
+      { status: 400 }
+    );
+  }
 
-      const result = await db.collection("customers").insertOne(finalCustomerRecord);
-      return NextResponse.json({ success: true, message: "Customer created.", id: result.insertedId });
+  // ==========================================
+  // 1. WARRANTY DETAILS
+  // ==========================================
+
+  const startDate = new Date(
+    customerData.serviceDate || new Date()
+  );
+
+  const warrantyNum =
+    parseInt(
+      String(customerData.warrantyYears || "5").replace(/\D/g, ""),
+      10
+    ) || 5;
+
+  const endDate = new Date(startDate);
+
+  endDate.setFullYear(
+    endDate.getFullYear() + warrantyNum
+  );
+
+  const now = new Date();
+
+  const totalMs =
+    endDate.getTime() - startDate.getTime();
+
+  const elapsedMs = Math.max(
+    0,
+    Math.min(
+      totalMs,
+      now.getTime() - startDate.getTime()
+    )
+  );
+
+  const yearsLeft = Math.max(
+    0,
+    (totalMs - elapsedMs) /
+      (1000 * 60 * 60 * 24 * 365)
+  ).toFixed(1);
+
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+  const serviceYear =
+    startDate.getFullYear() || now.getFullYear();
+
+  // ==========================================
+  // 2. FIRST SAVE CUSTOMER
+  // ==========================================
+
+  const finalCustomerRecord = {
+    ...customerData,
+
+    createdAt: new Date(),
+    updatedAt: new Date(),
+
+    // Email automation tracking
+    certificateNo: null,
+    warrantyEmailSentAt: null,
+    accidentalProcessEmailSentAt: null,
+    accidentalWarrantyEmailSentAt: null,
+    accidentalWarrantyStatus: "pending",
+  };
+
+  const result = await db
+    .collection("customers")
+    .insertOne(finalCustomerRecord);
+
+  // ==========================================
+  // 3. GENERATE STABLE CERTIFICATE NUMBER
+  // ==========================================
+
+  const serialSeed = parseInt(
+    result.insertedId.toString().slice(-6),
+    16
+  )
+    .toString()
+    .slice(-4)
+    .padStart(4, "0");
+
+  const certificateNo =
+    `PS-${serviceYear}-${serialSeed}`;
+
+  // Save certificate number immediately
+  await db.collection("customers").updateOne(
+    { _id: result.insertedId },
+    {
+      $set: {
+        certificateNo,
+        updatedAt: new Date(),
+      },
     }
+  );
+
+  // ==========================================
+  // 4. EMAIL #1
+  // STANDARD WARRANTY CERTIFICATE
+  // ==========================================
+
+  let emailSent = false;
+  let emailMessage = "";
+
+  if (customerData.email) {
+    try {
+      const emailResponse = await fetch(
+        new URL(
+          "/api/send-warranty-email",
+          request.url
+        ),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            certificateNo,
+
+            issuedFmt: formatDate(now),
+
+            customerName:
+              customerData.customerName,
+
+            vehicleModel:
+              customerData.vehicleModel || "",
+
+            vehicleNo:
+              customerData.vehicleNo,
+
+            studio:
+              customerData.kmDriven || "",
+
+            contactNo:
+              customerData.contactNo || "",
+
+            email:
+              customerData.email,
+
+            serviceType:
+              customerData.serviceType || "",
+
+            serviceDateFmt:
+              formatDate(startDate),
+
+            warrantyNum,
+
+            endDateFmt:
+              formatDate(endDate),
+
+            yearsLeft,
+          }),
+        }
+      );
+
+      const emailResult =
+        await emailResponse.json();
+
+      if (
+        emailResponse.ok &&
+        emailResult.success
+      ) {
+        emailSent = true;
+
+        emailMessage =
+          "Warranty email sent successfully.";
+
+        // ==========================================
+        // IMPORTANT:
+        // Email #1 successfully sent
+        // Start 24 hour automation timer from this time
+        // ==========================================
+
+        await db.collection("customers").updateOne(
+          { _id: result.insertedId },
+          {
+            $set: {
+              warrantyEmailSentAt: new Date(),
+              accidentalWarrantyStatus: "waiting",
+              updatedAt: new Date(),
+            },
+          }
+        );
+      } else {
+        emailMessage =
+          emailResult.message ||
+          "Customer saved, but warranty email failed.";
+      }
+    } catch (emailError) {
+      console.error(
+        "CUSTOMER SAVED, WARRANTY EMAIL FAILED:",
+        emailError
+      );
+
+      emailMessage =
+        "Customer saved, but warranty email could not be sent.";
+    }
+  } else {
+    emailMessage =
+      "Customer saved, but no email address was provided.";
+  }
+
+  // ==========================================
+  // 5. ALWAYS RETURN CUSTOMER SUCCESS
+  // ==========================================
+
+  return NextResponse.json({
+    success: true,
+    message: "Customer created.",
+    id: result.insertedId,
+    certificateNo,
+    emailSent,
+    emailMessage,
+  });
+}
 
     if (action === "update_customer") {
       if (!customerId || !customerData) {
