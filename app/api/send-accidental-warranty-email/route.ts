@@ -262,7 +262,7 @@ Team Paint Shield India`,
       attachments: [
         {
           filename: `paintshield-accidental-warranty-${vehicleNo}.pdf`,
-          content: pdfBuffer,
+          content: Buffer.from(pdfBuffer),
           contentType: "application/pdf",
         },
       ],

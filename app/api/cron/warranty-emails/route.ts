@@ -356,7 +356,7 @@ info@paintshieldindia.com`,
                 {
                   filename: `Accidental-Warranty-${latestCustomer.certificateNo || "Certificate"}.pdf`,
 
-                  content: pdfBuffer,
+                  content: Buffer.from(pdfBuffer),
 
                   contentType: "application/pdf",
                 },
