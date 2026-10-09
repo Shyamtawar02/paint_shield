@@ -332,7 +332,7 @@ export function getWarrantyCertificateHtml(
 
       Paint Shield India<br/>
 
-      Contact: +91 6367629112<br/>
+      Contact: +91 7701099982<br/>
 
       Email: info@paintshieldindia.com<br/>
 

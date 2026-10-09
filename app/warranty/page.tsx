@@ -238,7 +238,7 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
     <div class="studio">
       <b>Contact</b>
       Paint Shield India<br/>
-      Contact: +91 6367629112<br/>
+      Contact: +91 7701099982<br/>
       Email: info@paintshieldindia.com<br/>
       Services: Premium PPF, Window Tint
     </div>
@@ -390,7 +390,7 @@ function WarrantyView({ customer, onLogout }: { customer: Customer; onLogout: ()
           <div className="md:text-right text-sm leading-relaxed shrink-0">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-1">Contact</p>
             <p className="font-medium">Paint Shield India</p>
-            <p className="text-muted-foreground text-xs">Contact: +91 6367629112</p>
+            <p className="text-muted-foreground text-xs">Contact: +91 7701099982</p>
             <p className="text-muted-foreground text-xs">Email: info@paintshieldindia.com</p>
           </div>
         </div>
