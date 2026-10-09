@@ -86,10 +86,10 @@ const pdfBuffer = await page.pdf({
   preferCSSPageSize: true,
   printBackground: true,
   margin: {
-    top: "7mm",
-    right: "7mm",
-    bottom: "7mm",
-    left: "7mm",
+    top: "10mm",
+    right: "10mm",
+    bottom: "10mm",
+    left: "10mm",
   },
 });
 
