@@ -338,7 +338,6 @@ export function getWarrantyCertificateHtml(
       Services: Premium PPF, Window Tint
 
     </div>
-s
   </div>
 
 
