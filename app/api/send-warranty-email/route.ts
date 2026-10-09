@@ -80,16 +80,18 @@ export async function POST(req: Request) {
     });
 
     // Generate A4 PDF
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "14mm",
-        right: "14mm",
-        bottom: "14mm",
-        left: "14mm",
-      },
-    });
+   
+const pdfBuffer = await page.pdf({
+  format: "A4",
+  preferCSSPageSize: true,
+  printBackground: true,
+  margin: {
+    top: "7mm",
+    right: "7mm",
+    bottom: "7mm",
+    left: "7mm",
+  },
+});
 
     await browser.close();
     browser = undefined;
