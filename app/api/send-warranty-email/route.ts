@@ -94,6 +94,12 @@ export async function POST(req: Request) {
     await browser.close();
     browser = undefined;
 
+    
+console.log("GMAIL CONFIG CHECK:", {
+  userExists: Boolean(process.env.GMAIL_USER),
+  passwordExists: Boolean(process.env.GMAIL_APP_PASSWORD),
+});
+
     // Gmail transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
