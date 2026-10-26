@@ -287,7 +287,7 @@ Please keep this certificate safely for your records.
 
 Regards,
 Paint Shield India
-+91 6367629112
++91 9685859112
 info@paintshieldindia.com`,
 
               html: `
@@ -343,7 +343,7 @@ info@paintshieldindia.com`,
                   </p>
 
                   <p style="color:#666;">
-                    +91 6367629112<br />
+                    +91 9685859112<br />
                     info@paintshieldindia.com
                   </p>
 

@@ -328,13 +328,9 @@ export function getWarrantyCertificateHtml(
     <div class="studio">
 
       <b>Contact</b>
-
       Paint Shield India<br/>
-
-      Contact: +91 7701099982<br/>
-
+      Contact: +91 9685859112<br/>
       Email: info@paintshieldindia.com<br/>
-
       Services: Premium PPF, Window Tint
 
     </div>

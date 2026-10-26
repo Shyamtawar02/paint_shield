@@ -601,7 +601,7 @@ export function getAccidentalWarrantyCertificateHtml(
 
     &nbsp; | &nbsp;
 
-    +91 6367629112
+    +91 9685859112
 
     &nbsp; | &nbsp;
 
