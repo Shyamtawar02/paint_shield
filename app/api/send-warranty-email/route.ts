@@ -131,7 +131,7 @@ Valid Until: ${endDateFmt}
 Please retain this email and attached certificate for your records.
 
 For warranty assistance:
-Phone: +91 6367629112
+Phone: +91 9685859112
 Email: info@paintshieldindia.com
 
 Thank you for choosing Paint Shield India.
@@ -198,7 +198,7 @@ Team Paint Shield India`,
 
           <p>
             <strong>Paint Shield India</strong><br/>
-            📞 +91 6367629112<br/>
+            📞 +91 9685859112<br/>
             📧 info@paintshieldindia.com
           </p>
 
