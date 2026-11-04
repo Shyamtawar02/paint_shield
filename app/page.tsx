@@ -24,6 +24,7 @@ import gallery1 from "@/public/assets/gallery-1.jpg";
 import gallery2 from "@/public/assets/gallery-2.jpg";
 import gallery3 from "@/public/assets/gallery-3.jpg";
 import studioBay from "@/public/assets/studio-bay.jpg";
+import studioBay1 from "@/public/assets/Gemini_Generated_Image_8na0dh8na0dh8na0.png";
 import pillarNonYellow from "@/public/assets/pillar-nonyellow.jpeg";
 import pillarSelfHeal from "@/public/assets/pillar-selfheal.jpeg";
 import pillarAntiStain from "@/public/assets/pillar-antistain.jpg";
@@ -120,7 +121,7 @@ export default function HomePage() {
           <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe">
             <Image
               src={studioBay}
-             alt="Professional PPF installation and car detailing studio bay at Paint Shield India"
+              alt="Professional PPF installation and car detailing studio bay at Paint Shield India"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
@@ -158,6 +159,197 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
+
+
+
+      <section className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="grid gap-12 md:gap-16 md:grid-cols-2 items-center">
+
+          {/* Left: Accidental Warranty Visual */}
+          
+<div className="relative w-full">
+
+  {/* Image Card */}
+  <div className="relative overflow-hidden rounded-2xl shadow-luxe border border-border bg-[#0b0b0b]">
+
+    {/* Full Image */}
+   
+<div className="relative aspect-[2/2] w-full rounded-2xl overflow-hidden shadow-luxe">
+
+  <Image
+    src="/assets/Luxury SUV Protective Film Restoration.png"
+    alt="Paint Shield India accidental PPF protection"
+    fill
+    sizes="(max-width: 768px) 100vw, 50vw"
+    className="object-cover object-center"
+    priority
+  />
+
+  {/* Floating Warranty Badge */}
+  {/* <div className="absolute bottom-6 right-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5">
+    <p className="text-xs uppercase tracking-[0.2em] text-gold">
+      Protection
+    </p>
+    <p className="font-display text-2xl mt-1">
+      1 Year
+    </p>
+    <p className="text-xs text-muted-foreground">
+      Accidental Warranty
+    </p>
+  </div> */}
+
+</div>
+
+
+    {/* Bottom Information */}
+    <div className="relative bg-gradient-to-br from-[#777777] to-[#252525] p-6 md:p-8">
+
+      <p className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">
+        Paint Shield India
+      </p>
+
+      <h3 className="font-display text-2xl md:text-3xl text-white">
+        Accidental Protection
+      </h3>
+
+      <p className="text-sm text-white/70 mt-2">
+        Extra confidence. Extra protection.
+      </p>
+
+    </div>
+
+  </div>
+
+  {/* Floating Warranty Badge */}
+  <div className="absolute -top-5 -right-4 md:-right-6 z-10 bg-card border border-gold/40 rounded-2xl shadow-luxe p-5">
+
+    <p className="text-[10px] uppercase tracking-[0.2em] text-gold">
+      Protection
+    </p>
+
+    <p className="font-display text-3xl text-gradient-gold mt-1">
+      1 Year
+    </p>
+
+    <p className="text-xs text-muted-foreground">
+      Accidental Warranty
+    </p>
+
+  </div>
+
+</div>
+
+
+          {/* Right: Warranty Details */}
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4">
+              Added Peace of Mind
+            </p>
+
+            <h2 className="font-display text-4xl md:text-5xl leading-tight">
+              Accidental Warranty:
+              <br />
+              <em className="text-gradient-gold not-italic">
+                Protection beyond the ordinary.
+              </em>
+            </h2>
+
+            <div className="my-8 gold-divider" />
+
+            <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
+              Paint Shield India offers a 1-Year Accidental Warranty
+              for eligible accidental damage to your installed Paint
+              Protection Film (PPF). Every claim is subject to inspection,
+              verification and approval by Paint Shield India.
+            </p>
+
+            {/* Warranty Highlights */}
+            <div className="mt-8 space-y-5">
+
+              <div className="flex gap-4 items-start">
+                <div className="h-10 w-10 shrink-0 rounded-full border border-gold/40 flex items-center justify-center text-gold">
+                  <span className="font-display text-lg">01</span>
+                </div>
+                <div>
+                  <h3 className="font-display text-lg">
+                    Up to 2 Accidental Claims
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                    Maximum 2 accidental claims per warranty year.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="h-10 w-10 shrink-0 rounded-full border border-gold/40 flex items-center justify-center text-gold">
+                  <span className="font-display text-lg">02</span>
+                </div>
+                <div>
+                  <h3 className="font-display text-lg">
+                    PPF Section Replacement
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                    Damaged PPF section may be replaced after inspection
+                    and approval.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="h-10 w-10 shrink-0 rounded-full border border-gold/40 flex items-center justify-center text-gold">
+                  <span className="font-display text-lg">03</span>
+                </div>
+                <div>
+                  <h3 className="font-display text-lg">
+                    Authorized Installation
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                    Coverage applies only to PPF installed by an
+                    authorized Paint Shield India installer.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Important Note */}
+            <div className="mt-8 rounded-xl border border-gold/30 bg-card p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-gold mb-2">
+                Important Information
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Labour and installation charges are not included and
+                are payable by the customer. Misuse, intentional damage,
+                chemical damage and normal wear and tear are excluded.
+              </p>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-6">
+              <div>
+                <p className="font-display text-lg text-gradient-gold">
+                  1 Year
+                </p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">
+                  Warranty Period
+                </p>
+              </div>
+
+              <div>
+                <p className="font-display text-lg text-gradient-gold">
+                  2 Claims
+                </p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">
+                  Maximum Per Year
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
 
       <div className="mx-auto max-w-7xl px-6"><div className="gold-divider" /></div>
 
@@ -385,10 +577,10 @@ export default function HomePage() {
       <section className="bg-secondary/30 border-y border-border py-24 md:py-32">
         <div className="mx-auto max-w-7xl px-6 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-luxe order-2 md:order-1">
-                      <Image src={gallery1} 
-                     alt="Professional car detailing and paint protection at Paint Shield India" 
-                      fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-  {/* <div className="absolute bottom-6 left-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 max-w-[200px] hidden md:block">
+            <Image src={gallery1}
+              alt="Professional car detailing and paint protection at Paint Shield India"
+              fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+            {/* <div className="absolute bottom-6 left-6 z-10 bg-card border border-border rounded-xl shadow-luxe p-5 max-w-[200px] hidden md:block">
               <p className="text-xs uppercase tracking-[0.2em] text-gold">Certified</p>
               <p className="font-display text-lg mt-1">XPEL · STEK · Suntek</p>
             </div> */}
@@ -569,7 +761,7 @@ function SpecSheet({
           <div className="relative bg-secondary/40 hidden md:block md:h-full min-h-[450px]">
             <Image
               src={previewImage}
-             alt={`${variant.typeName || product.name} - Paint Shield India PPF and Protection`}
+              alt={`${variant.typeName || product.name} - Paint Shield India PPF and Protection`}
               fill
               sizes="35vw"
               className="object-cover"
@@ -639,7 +831,7 @@ function GalleryPhoto({ src, ratio, caption }: { src: NextStaticAsset; ratio: st
     <figure className="break-inside-avoid mb-6 rounded-xl overflow-hidden border border-border bg-card shadow-soft group">
       <div className={`overflow-hidden relative ${ratio}`}>
         <Image src={src}
-         alt={`${caption} | Luxury Car Protection and PPF Installation by Paint Shield India`}
+          alt={`${caption} | Luxury Car Protection and PPF Installation by Paint Shield India`}
           fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
       </div>
       <figcaption className="px-4 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-between">
