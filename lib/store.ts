@@ -1,10 +1,11 @@
-// Lightweight client-side store with localStorage persistence + seeded demo data.
+
+// Lightweight client-side store with localStorage persistence.
 import { useEffect, useState } from "react";
 
 export type ProductVariant = {
   id: string;
   typeName: string;
-  name:string,
+  name: string;
   microns: string;
   warranty: string;
   material: string;
@@ -12,7 +13,7 @@ export type ProductVariant = {
   heatResistance: string;
   selfHealing: string;
   details: string;
-  detailedInfo:string
+  detailedInfo: string;
 };
 
 export type Product = {
@@ -30,23 +31,26 @@ export type Vlog = {
   url: string;
 };
 
-// FULLY SYNCED WITH MONGODB SCHEMA
 export type Customer = {
   id?: string;
   _id?: string;
-  customerName: string; // Matches MongoDB field
+  customerName: string;
   vehicleModel: string;
   vehicleNo: string;
-  contactNo: string;    // Matches MongoDB field
+  contactNo: string;
   email: string;
-  warrantyYears: string; // Matches MongoDB field (e.g., "8 years")
+  warrantyYears: string;
   serviceDate: string;
   kmDriven: string;
   serviceType: string;
-  workPhotos: string[]; // Matches MongoDB field
+  workPhotos: string[];
 };
 
-export type Faq = { id: string; q: string; a: string };
+export type Faq = {
+  id: string;
+  q: string;
+  a: string;
+};
 
 export type Studio = {
   address: string;
@@ -60,7 +64,6 @@ export type Studio = {
   about: string;
 };
 
-// Bumped key — schema change for product variants.
 const KEY = "ppf-store-v3";
 
 type State = {
@@ -72,14 +75,10 @@ type State = {
 };
 
 const seed: State = {
-  products: [
-  ],
-  vlogs: [
-    ],
-  customers: [
-  ],
-  faqs: [
-  ],
+  products: [],
+  vlogs: [],
+  customers: [],
+  faqs: [],
   studio: {
     address: "PAINT SHIELD Studio, MP Nagar Zone-II, Bhopal — 462011",
     hours: "Mon – Sat • 10:00 AM – 8:00 PM",
@@ -94,31 +93,86 @@ const seed: State = {
   },
 };
 
+// Remove large photo data from localStorage.
+// Original photos remain in MongoDB and in current application state.
+function getPersistableState(s: State): State {
+  return {
+    ...s,
+    customers: s.customers.map((customer) => ({
+      ...customer,
+      workPhotos: [],
+    })),
+  };
+}
+
 function read(): State {
   if (typeof window === "undefined") return seed;
+
   try {
     const raw = localStorage.getItem(KEY);
+
     if (!raw) {
-      localStorage.setItem(KEY, JSON.stringify(seed));
-      return JSON.parse(JSON.stringify(seed)); // Deep copy prevent references
+      return JSON.parse(JSON.stringify(seed));
     }
+
     const parsed = JSON.parse(raw) as Partial<State>;
+
     return {
       products: parsed.products ?? seed.products,
       vlogs: parsed.vlogs ?? seed.vlogs,
-      customers: parsed.customers ?? seed.customers,
+
+      // Photos are fetched from MongoDB, not localStorage.
+      customers: (parsed.customers ?? seed.customers).map((customer) => ({
+        ...customer,
+        workPhotos: [],
+      })),
+
       faqs: parsed.faqs ?? seed.faqs,
-      studio: { ...seed.studio, ...(parsed.studio ?? {}) },
+      studio: {
+        ...seed.studio,
+        ...(parsed.studio ?? {}),
+      },
     };
-  } catch {
+  } catch (error) {
+    console.error("STORE READ ERROR:", error);
     return JSON.parse(JSON.stringify(seed));
   }
 }
 
 function write(s: State) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(s));
-  window.dispatchEvent(new Event("ppf-store-update"));
+
+  try {
+    const persistableState = getPersistableState(s);
+
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(persistableState)
+    );
+  } catch (error) {
+    console.error("STORE STORAGE ERROR:", error);
+
+    // Clear only the local cache and retry.
+    // MongoDB data is not affected.
+    try {
+      localStorage.removeItem(KEY);
+
+      localStorage.setItem(
+        KEY,
+        JSON.stringify(getPersistableState(s))
+      );
+    } catch (retryError) {
+      console.error("STORE RETRY FAILED:", retryError);
+    }
+  }
+
+  // Send full in-memory state to other components
+  // without storing large photos in localStorage.
+  window.dispatchEvent(
+    new CustomEvent("ppf-store-update", {
+      detail: s,
+    })
+  );
 }
 
 export function useStore() {
@@ -126,9 +180,20 @@ export function useStore() {
 
   useEffect(() => {
     setState(read());
-    const sync = () => setState(read());
+
+    const sync = (event?: Event) => {
+      const customEvent = event as CustomEvent<State> | undefined;
+
+      if (customEvent?.detail) {
+        setState(customEvent.detail);
+      } else {
+        setState(read());
+      }
+    };
+
     window.addEventListener("ppf-store-update", sync);
     window.addEventListener("storage", sync);
+
     return () => {
       window.removeEventListener("ppf-store-update", sync);
       window.removeEventListener("storage", sync);
@@ -136,9 +201,13 @@ export function useStore() {
   }, []);
 
   const update = (fn: (s: State) => State) => {
-    // Read fresh and deep clone to completely bypass reactivity mutations
-    const freshState = JSON.parse(JSON.stringify(read())) as State;
+    // Always work with the latest in-memory state.
+    const freshState = JSON.parse(
+      JSON.stringify(state)
+    ) as State;
+
     const next = fn(freshState);
+
     write(next);
     setState(next);
   };
@@ -146,4 +215,5 @@ export function useStore() {
   return { state, update };
 }
 
-export const id = () => Math.random().toString(36).slice(2, 10);
+export const id = () =>
+  Math.random().toString(36).slice(2, 10);

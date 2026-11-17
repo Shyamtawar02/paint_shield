@@ -14,20 +14,20 @@ export async function GET(request: Request) {
     // CRON SECURITY
     // ==========================================
 
-    const authHeader = request.headers.get("authorization");
+ 
 
-    if (
-      process.env.CRON_SECRET &&
-      authHeader !== `Bearer ${process.env.CRON_SECRET}`
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Unauthorized",
-        },
-        { status: 401 }
-      );
-    }
+   const authHeader = request.headers.get("authorization");
+const cronSecret = process.env.CRON_SECRET;
+
+if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Unauthorized",
+    },
+    { status: 401 }
+  );
+}
 
     // ==========================================
     // DATABASE

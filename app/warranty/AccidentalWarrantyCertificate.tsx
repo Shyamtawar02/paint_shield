@@ -290,7 +290,7 @@ export default function AccidentalWarrantyCertificate({ data }: Props) {
 
               <div class="contact">
                 <strong class="gold">PAINT SHIELD INDIA</strong><br/>
-                +91 7701099983<br/>
+                +91 9685859112<br/>
                 info@paintshieldindia.com<br/>
                 www.paintshieldindia.com
               </div>
